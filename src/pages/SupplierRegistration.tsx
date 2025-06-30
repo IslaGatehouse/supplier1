@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,10 +37,11 @@ const SupplierRegistration = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleCertificationChange = (certification: string, checked: boolean) => {
+  const handleCertificationChange = (certification: string, checked: boolean | string) => {
+    const isChecked = checked === true || checked === "true";
     setFormData(prev => ({
       ...prev,
-      certifications: checked 
+      certifications: isChecked 
         ? [...prev.certifications, certification]
         : prev.certifications.filter(c => c !== certification)
     }));
@@ -210,7 +210,7 @@ const SupplierRegistration = () => {
                     <Checkbox
                       id={cert}
                       checked={formData.certifications.includes(cert)}
-                      onCheckedChange={(checked) => handleCertificationChange(cert, checked)}
+                      onCheckedChange={(checked) => handleCertificationChange(cert, checked || false)}
                     />
                     <Label htmlFor={cert}>{cert}</Label>
                   </div>
