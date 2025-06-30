@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,87 @@ interface Supplier {
   delayHistory: string;
 }
 
+const sampleSuppliers: Supplier[] = [
+  {
+    id: "1",
+    companyName: "Tech Solutions Inc",
+    email: "contact@techsolutions.com",
+    contactPerson: "John Smith",
+    country: "united-states",
+    industry: "technology",
+    riskScore: 85,
+    riskCategory: "Low",
+    submittedAt: "2024-01-15T10:30:00Z",
+    certifications: ["ISO 9001", "SOC 2"],
+    delayHistory: "excellent"
+  },
+  {
+    id: "2",
+    companyName: "Global Manufacturing Ltd",
+    email: "info@globalmanuf.com",
+    contactPerson: "Sarah Johnson",
+    country: "germany",
+    industry: "manufacturing",
+    riskScore: 72,
+    riskCategory: "Medium",
+    submittedAt: "2024-01-20T14:15:00Z",
+    certifications: ["ISO 9001", "ISO 14001"],
+    delayHistory: "good"
+  },
+  {
+    id: "3",
+    companyName: "Healthcare Supplies Co",
+    email: "orders@healthsupply.com",
+    contactPerson: "Dr. Michael Brown",
+    country: "canada",
+    industry: "healthcare",
+    riskScore: 91,
+    riskCategory: "Low",
+    submittedAt: "2024-01-25T09:45:00Z",
+    certifications: ["ISO 9001", "ISO 45001", "GDPR Compliant"],
+    delayHistory: "excellent"
+  },
+  {
+    id: "4",
+    companyName: "Quick Build Construction",
+    email: "contracts@quickbuild.com",
+    contactPerson: "Maria Garcia",
+    country: "spain",
+    industry: "construction",
+    riskScore: 58,
+    riskCategory: "High",
+    submittedAt: "2024-02-01T16:20:00Z",
+    certifications: ["ISO 45001"],
+    delayHistory: "frequent"
+  },
+  {
+    id: "5",
+    companyName: "Financial Services Group",
+    email: "partnerships@fingroup.com",
+    contactPerson: "David Lee",
+    country: "united-kingdom",
+    industry: "finance",
+    riskScore: 88,
+    riskCategory: "Low",
+    submittedAt: "2024-02-05T11:10:00Z",
+    certifications: ["SOC 2", "GDPR Compliant"],
+    delayHistory: "excellent"
+  },
+  {
+    id: "6",
+    companyName: "Retail Solutions Corp",
+    email: "vendor@retailsol.com",
+    contactPerson: "Lisa Wang",
+    country: "australia",
+    industry: "retail",
+    riskScore: 65,
+    riskCategory: "Medium",
+    submittedAt: "2024-02-10T13:30:00Z",
+    certifications: ["ISO 9001"],
+    delayHistory: "occasional"
+  }
+];
+
 const AdminDashboard = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
@@ -31,10 +111,17 @@ const AdminDashboard = () => {
   const [countryFilter, setCountryFilter] = useState("all");
 
   useEffect(() => {
-    // Load suppliers from localStorage
+    // Load suppliers from localStorage or use sample data
     const storedSuppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-    setSuppliers(storedSuppliers);
-    setFilteredSuppliers(storedSuppliers);
+    if (storedSuppliers.length === 0) {
+      // If no suppliers exist, add sample data
+      localStorage.setItem("suppliers", JSON.stringify(sampleSuppliers));
+      setSuppliers(sampleSuppliers);
+      setFilteredSuppliers(sampleSuppliers);
+    } else {
+      setSuppliers(storedSuppliers);
+      setFilteredSuppliers(storedSuppliers);
+    }
   }, []);
 
   useEffect(() => {
