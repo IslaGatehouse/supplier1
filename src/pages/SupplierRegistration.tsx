@@ -1,5 +1,8 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,7 +15,9 @@ import { ArrowLeft, Upload, Building2, Check, ChevronsUpDown } from "lucide-reac
 import { useToast } from "@/hooks/use-toast";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import { supplierRegistrationSchema, type SupplierRegistrationData } from "@/lib/validationSchemas";
 
 const countries = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
@@ -42,40 +47,43 @@ const SupplierRegistration = () => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [countryOpen, setCountryOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    companyName: "",
-    email: "",
-    contactPerson: "",
-    phone: "",
-    country: "",
-    industry: "",
-    certifications: [],
-    delayHistory: "",
-    companySize: "",
-    yearsInBusiness: "",
-    description: "",
-    agreeToTerms: false
+
+  const form = useForm<SupplierRegistrationData>({
+    resolver: zodResolver(supplierRegistrationSchema),
+    defaultValues: {
+      companyName: "",
+      email: "",
+      contactPerson: "",
+      phone: "",
+      country: "",
+      industry: "",
+      certifications: [],
+      delayHistory: "",
+      companySize: "",
+      yearsInBusiness: "",
+      description: "",
+      agreeToTerms: false
+    }
   });
 
   const totalSteps = 3;
   const progressPercentage = (currentStep / totalSteps) * 100;
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCertificationChange = (certification: string, checked: boolean | string) => {
     const isChecked = checked === true || checked === "true";
-    setFormData(prev => ({
-      ...prev,
-      certifications: isChecked 
-        ? [...prev.certifications, certification]
-        : prev.certifications.filter(c => c !== certification)
-    }));
+    const currentCertifications = form.getValues("certifications") || [];
+    
+    form.setValue(
+      "certifications",
+      isChecked 
+        ? [...currentCertifications, certification]
+        : currentCertifications.filter(c => c !== certification)
+    );
   };
 
-  const handleNext = () => {
-    if (currentStep < totalSteps) {
+  const handleNext = async () => {
+    const isValid = await form.trigger();
+    if (isValid && currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -86,24 +94,20 @@ const SupplierRegistration = () => {
     }
   };
 
-  const calculateRiskScore = () => {
-    let score = 100; // Start with perfect score
+  const calculateRiskScore = (data: SupplierRegistrationData) => {
+    let score = 100;
     
-    // Delay History Impact
-    if (formData.delayHistory === "frequent") score -= 30;
-    else if (formData.delayHistory === "occasional") score -= 15;
+    if (data.delayHistory === "frequent") score -= 30;
+    else if (data.delayHistory === "occasional") score -= 15;
     
-    // Years in Business Impact
-    const years = parseInt(formData.yearsInBusiness);
+    const years = parseInt(data.yearsInBusiness || "0");
     if (years < 2) score -= 20;
     else if (years < 5) score -= 10;
     
-    // Certifications Impact
-    score += formData.certifications.length * 5;
+    score += (data.certifications?.length || 0) * 5;
     
-    // Company Size Impact
-    if (formData.companySize === "large") score += 10;
-    else if (formData.companySize === "medium") score += 5;
+    if (data.companySize === "large") score += 10;
+    else if (data.companySize === "medium") score += 5;
     
     return Math.max(0, Math.min(100, score));
   };
@@ -114,14 +118,13 @@ const SupplierRegistration = () => {
     return "High";
   };
 
-  const handleSubmit = () => {
-    const riskScore = calculateRiskScore();
+  const onSubmit = (data: SupplierRegistrationData) => {
+    const riskScore = calculateRiskScore(data);
     const riskCategory = getRiskCategory(riskScore);
     
-    // Store in localStorage (in real app, this would be sent to backend)
     const existingSuppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
     const newSupplier = {
-      ...formData,
+      ...data,
       id: Date.now().toString(),
       riskScore,
       riskCategory,
@@ -145,112 +148,148 @@ const SupplierRegistration = () => {
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="companyName">Company Name *</Label>
-                <Input
-                  id="companyName"
-                  value={formData.companyName}
-                  onChange={(e) => handleInputChange("companyName", e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  required
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address *</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="contactPerson">Contact Person *</Label>
-                <Input
-                  id="contactPerson"
-                  value={formData.contactPerson}
-                  onChange={(e) => handleInputChange("contactPerson", e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="contactPerson"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Person *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="country">Country *</Label>
-                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={countryOpen}
-                      className="w-full justify-between"
-                    >
-                      {formData.country
-                        ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === formData.country)
-                        : "Select country..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search country..." />
-                      <CommandList>
-                        <CommandEmpty>No country found.</CommandEmpty>
-                        <CommandGroup>
-                          {countries.map((country) => (
-                            <CommandItem
-                              key={country}
-                              value={country}
-                              onSelect={(currentValue) => {
-                                const countryValue = country.toLowerCase().replace(/\s+/g, '-');
-                                handleInputChange("country", formData.country === countryValue ? "" : countryValue);
-                                setCountryOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.country === country.toLowerCase().replace(/\s+/g, '-') ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {country}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <Label htmlFor="industry">Industry *</Label>
-                <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="healthcare">Healthcare</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
-                    <SelectItem value="retail">Retail</SelectItem>
-                    <SelectItem value="construction">Construction</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country *</FormLabel>
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === field.value)
+                              : "Select country..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search country..." />
+                          <CommandList>
+                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandGroup>
+                              {countries.map((country) => (
+                                <CommandItem
+                                  key={country}
+                                  value={country}
+                                  onSelect={() => {
+                                    const countryValue = country.toLowerCase().replace(/\s+/g, '-');
+                                    form.setValue("country", countryValue);
+                                    setCountryOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === country.toLowerCase().replace(/\s+/g, '-') ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {country}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="industry"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Industry *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                        <SelectItem value="technology">Technology</SelectItem>
+                        <SelectItem value="healthcare">Healthcare</SelectItem>
+                        <SelectItem value="finance">Finance</SelectItem>
+                        <SelectItem value="retail">Retail</SelectItem>
+                        <SelectItem value="construction">Construction</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
         );
@@ -258,77 +297,113 @@ const SupplierRegistration = () => {
       case 2:
         return (
           <div className="space-y-4">
-            <div>
-              <Label className="text-base font-medium">Certifications</Label>
-              <div className="mt-2 space-y-2">
-                {["ISO 9001", "ISO 14001", "ISO 45001", "SOC 2", "GDPR Compliant", "Other"].map((cert) => (
-                  <div key={cert} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={cert}
-                      checked={formData.certifications.includes(cert)}
-                      onCheckedChange={(checked) => handleCertificationChange(cert, checked || false)}
-                    />
-                    <Label htmlFor={cert}>{cert}</Label>
+            <FormField
+              control={form.control}
+              name="certifications"
+              render={() => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">Certifications</FormLabel>
+                  <div className="mt-2 space-y-2">
+                    {["ISO 9001", "ISO 14001", "ISO 45001", "SOC 2", "GDPR Compliant", "Other"].map((cert) => (
+                      <div key={cert} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={cert}
+                          checked={(form.getValues("certifications") || []).includes(cert)}
+                          onCheckedChange={(checked) => handleCertificationChange(cert, checked || false)}
+                        />
+                        <Label htmlFor={cert}>{cert}</Label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="delayHistory">Delivery History</Label>
-                <Select value={formData.delayHistory} onValueChange={(value) => handleInputChange("delayHistory", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select delivery history" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="excellent">Always on time</SelectItem>
-                    <SelectItem value="good">Rarely delayed</SelectItem>
-                    <SelectItem value="occasional">Occasional delays</SelectItem>
-                    <SelectItem value="frequent">Frequent delays</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="companySize">Company Size</Label>
-                <Select value={formData.companySize} onValueChange={(value) => handleInputChange("companySize", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select company size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">Small (1-50 employees)</SelectItem>
-                    <SelectItem value="medium">Medium (51-200 employees)</SelectItem>
-                    <SelectItem value="large">Large (200+ employees)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="yearsInBusiness">Years in Business</Label>
-              <Input
-                id="yearsInBusiness"
-                type="number"
-                value={formData.yearsInBusiness}
-                onChange={(e) => handleInputChange("yearsInBusiness", e.target.value)}
-                placeholder="e.g., 5"
+              <FormField
+                control={form.control}
+                name="delayHistory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Delivery History</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select delivery history" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="excellent">Always on time</SelectItem>
+                        <SelectItem value="good">Rarely delayed</SelectItem>
+                        <SelectItem value="occasional">Occasional delays</SelectItem>
+                        <SelectItem value="frequent">Frequent delays</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="companySize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Size</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select company size" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="small">Small (1-50 employees)</SelectItem>
+                        <SelectItem value="medium">Medium (51-200 employees)</SelectItem>
+                        <SelectItem value="large">Large (200+ employees)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div>
-              <Label htmlFor="description">Company Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                placeholder="Brief description of your company and services..."
-                rows={4}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="yearsInBusiness"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Years in Business</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 5" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Brief description of your company and services..."
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         );
       
       case 3:
+        const watchedValues = form.watch();
         return (
           <div className="space-y-6">
             <div>
@@ -346,26 +421,35 @@ const SupplierRegistration = () => {
             <div className="bg-blue-50 p-4 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">Review Your Information</h3>
               <div className="space-y-1 text-sm text-blue-800">
-                <p><strong>Company:</strong> {formData.companyName}</p>
-                <p><strong>Contact:</strong> {formData.contactPerson}</p>
-                <p><strong>Email:</strong> {formData.email}</p>
-                <p><strong>Country:</strong> {formData.country}</p>
-                <p><strong>Industry:</strong> {formData.industry}</p>
-                <p><strong>Certifications:</strong> {formData.certifications.join(", ") || "None"}</p>
+                <p><strong>Company:</strong> {watchedValues.companyName}</p>
+                <p><strong>Contact:</strong> {watchedValues.contactPerson}</p>
+                <p><strong>Email:</strong> {watchedValues.email}</p>
+                <p><strong>Country:</strong> {watchedValues.country}</p>
+                <p><strong>Industry:</strong> {watchedValues.industry}</p>
+                <p><strong>Certifications:</strong> {watchedValues.certifications?.join(", ") || "None"}</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="terms"
-                checked={formData.agreeToTerms}
-                onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked)}
-                required
-              />
-              <Label htmlFor="terms" className="text-sm">
-                I agree to the terms and conditions and privacy policy *
-              </Label>
-            </div>
+            <FormField
+              control={form.control}
+              name="agreeToTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      I agree to the terms and conditions and privacy policy *
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
           </div>
         );
     }
@@ -403,36 +487,38 @@ const SupplierRegistration = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {renderStep()}
-            
-            <div className="flex justify-between mt-8">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-              >
-                Previous
-              </Button>
-              
-              {currentStep < totalSteps ? (
-                <Button
-                  onClick={handleNext}
-                  disabled={
-                    (currentStep === 1 && (!formData.companyName || !formData.email || !formData.contactPerson || !formData.country || !formData.industry)) ||
-                    (currentStep === 2 && !formData.delayHistory)
-                  }
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!formData.agreeToTerms}
-                >
-                  Submit Registration
-                </Button>
-              )}
-            </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                {renderStep()}
+                
+                <div className="flex justify-between mt-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={currentStep === 1}
+                  >
+                    Previous
+                  </Button>
+                  
+                  {currentStep < totalSteps ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={!form.formState.isValid}
+                    >
+                      Submit Registration
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       </div>
