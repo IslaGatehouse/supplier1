@@ -53,10 +53,6 @@ const SupplierInviteCode = () => {
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <Button type="submit" className="w-full">Continue</Button>
           </form>
-          <Button variant="ghost" className="mt-6 w-full" onClick={() => navigate("/start-registration")}> 
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous Page
-          </Button>
         </CardContent>
       </Card>
     </div>
