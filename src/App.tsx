@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import SupplierRegistration from "./pages/SupplierRegistration";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import NotFound from "./pages/NotFound";
 import { useEffect, useState } from "react";
@@ -55,6 +57,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/supplier-registration" element={<SupplierRegistration />} />
             <Route path="/supplier-login" element={<SupplierLogin />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
             <Route path="*" element={<NotFound />} />
