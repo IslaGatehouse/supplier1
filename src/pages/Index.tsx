@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +47,7 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Link to="/supplier-registration">
+              <Link to="/start-registration">
                 <Button size="lg" className="w-full">
                   Start Registration
                 </Button>
