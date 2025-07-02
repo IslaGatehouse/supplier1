@@ -17,7 +17,7 @@ const AdminLogin = () => {
       setError("Please enter both username and password.");
       return;
     }
-    if (username !== "isla" || password !== "isla") {
+    if (username !== "test" || password !== "test") {
       setError("Invalid username or password.");
       return;
     }
