@@ -1,49 +1,34 @@
-import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Upload, Building2, Check, ChevronsUpDown } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-
-const countries = [
-  // ... (same countries array as before)
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
-  // ... (rest of the countries)
-  "Vietnam", "Yemen", "Zambia", "Zimbabwe"
-];
+import { ArrowLeft } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supplierInviteSchema, type SupplierInviteFormData } from "@/lib/validationSchemas";
 
 const SupplierRegistrationInvite = () => {
-  const [formData, setFormData] = useState({
-    companyName: "",
-    email: "",
-    contactPerson: "",
-    phone: "",
-    companyHouse: "",
-    address: "",
-    country: "",
-    industry: "",
-    otherIndustry: "",
-    certifications: [],
-    otherCertification: "",
-    companySize: "",
-    yearsInBusiness: "",
-    turnoverTime: "",
-    description: "",
-    agreeToTerms: false
-  });
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
   const navigate = useNavigate();
+
+  const form = useForm<SupplierInviteFormData>({
+    resolver: zodResolver(supplierInviteSchema),
+    defaultValues: {
+      companyName: "",
+      email: "",
+      contactPerson: "",
+      companyHouse: "",
+      address: ""
+    }
+  });
+
+  const onSubmit = (data: SupplierInviteFormData) => {
+    console.log("Invite form submitted:", data);
+    // Handle invite form submission logic here
+    navigate("/supplier-registration");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="absolute top-4 left-4">
@@ -58,33 +43,87 @@ const SupplierRegistrationInvite = () => {
           <CardDescription>Enter your company details to continue registration.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6">
-            <div>
-              <Label htmlFor="companyName">Company Name *</Label>
-              <Input id="companyName" value={formData.companyName} onChange={e => handleInputChange("companyName", e.target.value)} required />
-            </div>
-            <div>
-              <Label htmlFor="email">Email Address *</Label>
-              <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange("email", e.target.value)} required />
-            </div>
-            <div>
-              <Label htmlFor="contactPerson">Contact Person *</Label>
-              <Input id="contactPerson" value={formData.contactPerson} onChange={e => handleInputChange("contactPerson", e.target.value)} required />
-            </div>
-            <div>
-              <Label htmlFor="companyHouse">Company House Number</Label>
-              <Input id="companyHouse" value={formData.companyHouse} onChange={e => handleInputChange("companyHouse", e.target.value)} placeholder="e.g., 12345678" />
-            </div>
-            <div>
-              <Label htmlFor="address">Company Address *</Label>
-              <Input id="address" value={formData.address} onChange={e => handleInputChange("address", e.target.value)} placeholder="Enter company address" required />
-            </div>
-            {/* Add other fields as needed */}
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address *</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="contactPerson"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Person *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="companyHouse"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company House Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="e.g., 12345678" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Address *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter company address" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full">
+                Continue Registration
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export default SupplierRegistrationInvite; 
+export default SupplierRegistrationInvite;

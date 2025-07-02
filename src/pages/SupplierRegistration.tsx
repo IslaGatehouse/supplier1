@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supplierRegistrationSchema, type SupplierRegistrationFormData } from "@/lib/validationSchemas";
 
 const countries = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
@@ -42,101 +46,55 @@ const SupplierRegistration = () => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [countryOpen, setCountryOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    companyName: "",
-    email: "",
-    contactPerson: "",
-    phone: "",
-    companyHouse: "",
-    address: "",
-    country: "",
-    industry: "",
-    otherIndustry: "",
-    certifications: [],
-    otherCertification: "",
-    companySize: "",
-    yearsInBusiness: "",
-    turnoverTime: "",
-    description: "",
-    agreeToTerms: false
+
+  const form = useForm<SupplierRegistrationFormData>({
+    resolver: zodResolver(supplierRegistrationSchema),
+    defaultValues: {
+      companyName: "",
+      email: "",
+      contactPerson: "",
+      phone: "",
+      companyHouse: "",
+      address: "",
+      country: "",
+      industry: "",
+      otherIndustry: "",
+      certifications: [],
+      otherCertification: "",
+      companySize: "",
+      yearsInBusiness: "",
+      turnoverTime: "",
+      description: "",
+      agreeToTerms: false
+    }
   });
-  const [phoneError, setPhoneError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [yearsInBusinessError, setYearsInBusinessError] = useState("");
-  const [turnoverTimeError, setTurnoverTimeError] = useState("");
 
   const totalSteps = 3;
   const progressPercentage = (currentStep / totalSteps) * 100;
 
-  const validatePhone = (value: string) => {
-    // Allow +, digits, spaces, dashes, parentheses, min 7 digits
-    const cleaned = value.replace(/[^\d]/g, "");
-    const regex = /^\+?[\d\s\-()]{7,}$/;
-    if (!value) return ""; // No error if empty (optional field)
-    if (!regex.test(value) || cleaned.length < 7) {
-      return "Please enter a valid phone number.";
-    }
-    return "";
-  };
-
-  const validateEmail = (value: string) => {
-    // Simple email regex
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!value) return ""; // No error if empty (should be required by form)
-    if (!regex.test(value)) {
-      return "Please enter a valid email address.";
-    }
-    return "";
-  };
-
-  const validateYearsInBusiness = (value: string) => {
-    if (!value) return "Only numerical values are allowed.";
-    if (!/^\d*$/.test(value)) return "Only numerical values are allowed.";
-    return "";
-  };
-
-  const validateTurnoverTime = (value: string) => {
-    if (!value) return "Only numerical values are allowed.";
-    if (!/^\d*$/.test(value)) return "Only numerical values are allowed.";
-    return "";
-  };
-
-  const handleInputChange = (field: string, value: any) => {
-    if (field === "yearsInBusiness" || field === "turnoverTime") {
-      // Remove negative values and allow only digits
-      value = value.replace(/[^\d]/g, "");
-    }
-    if (field === "phone") {
-      const error = validatePhone(value);
-      setPhoneError(error);
-    }
-    if (field === "email") {
-      const error = validateEmail(value);
-      setEmailError(error);
-    }
-    if (field === "yearsInBusiness") {
-      const error = validateYearsInBusiness(value);
-      setYearsInBusinessError(error);
-    }
-    if (field === "turnoverTime") {
-      const error = validateTurnoverTime(value);
-      setTurnoverTimeError(error);
-    }
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCertificationChange = (certification: string, checked: boolean | string) => {
     const isChecked = checked === true || checked === "true";
-    setFormData(prev => ({
-      ...prev,
-      certifications: isChecked 
-        ? [...prev.certifications, certification]
-        : prev.certifications.filter(c => c !== certification)
-    }));
+    const currentCertifications = form.getValues("certifications") || [];
+    
+    if (isChecked) {
+      form.setValue("certifications", [...currentCertifications, certification]);
+    } else {
+      form.setValue("certifications", currentCertifications.filter(c => c !== certification));
+    }
   };
 
-  const handleNext = () => {
-    if (currentStep < totalSteps) {
+  const handleNext = async () => {
+    let fieldsToValidate: (keyof SupplierRegistrationFormData)[] = [];
+    
+    if (currentStep === 1) {
+      fieldsToValidate = ["companyName", "email", "contactPerson", "phone", "address", "country", "industry", "otherIndustry"];
+    } else if (currentStep === 2) {
+      fieldsToValidate = ["companySize", "yearsInBusiness", "turnoverTime"];
+    }
+
+    const isValid = await form.trigger(fieldsToValidate);
+    
+    if (isValid && currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -147,32 +105,26 @@ const SupplierRegistration = () => {
     }
   };
 
-  const calculateRiskScore = () => {
-    let score = 100; // Start with perfect score
+  const calculateRiskScore = (data: SupplierRegistrationFormData) => {
+    let score = 100;
 
-    // Years in Business Impact
-    const years = parseInt(formData.yearsInBusiness);
+    const years = parseInt(data.yearsInBusiness);
     if (years < 2) score -= 20;
     else if (years < 5) score -= 10;
-    else if (years > 20) score += 5; // reward for long-standing business
+    else if (years > 20) score += 5;
 
-    // Certifications Impact (reward for each unique cert, up to 5)
-    const certCount = Math.min(formData.certifications.length, 5);
+    const certCount = Math.min(data.certifications?.length || 0, 5);
     score += certCount * 5;
 
-    // Company Size Impact
-    if (formData.companySize === "large") score += 10;
-    else if (formData.companySize === "medium") score += 5;
-    else if (formData.companySize === "small") score -= 5;
+    if (data.companySize === "large") score += 10;
+    else if (data.companySize === "medium") score += 5;
+    else if (data.companySize === "small") score -= 5;
 
-    // Industry Impact (example: higher risk for construction, lower for healthcare)
-    if (formData.industry === "construction") score -= 10;
-    else if (formData.industry === "healthcare") score += 5;
+    if (data.industry === "construction") score -= 10;
+    else if (data.industry === "healthcare") score += 5;
 
-    // Country Impact (example: reward for certain countries)
-    if (["united-states", "germany", "japan", "switzerland"].includes(formData.country)) score += 5;
+    if (["united-states", "germany", "japan", "switzerland"].includes(data.country)) score += 5;
 
-    // Clamp score between 0 and 100
     return Math.max(0, Math.min(100, score));
   };
 
@@ -182,19 +134,22 @@ const SupplierRegistration = () => {
     return "High";
   };
 
-  const handleSubmit = () => {
-    const riskScore = calculateRiskScore();
+  const onSubmit = (data: SupplierRegistrationFormData) => {
+    const riskScore = calculateRiskScore(data);
     const riskCategory = getRiskCategory(riskScore);
-    let certifications = formData.certifications;
-    if (certifications.includes("Other") && formData.otherCertification.trim()) {
+    
+    let certifications = data.certifications || [];
+    if (certifications.includes("Other") && data.otherCertification?.trim()) {
       certifications = certifications.filter(c => c !== "Other");
-      certifications = [...certifications, ...formData.otherCertification.split(",").map(c => c.trim()).filter(Boolean)];
+      certifications = [...certifications, ...data.otherCertification.split(",").map(c => c.trim()).filter(Boolean)];
     }
-    let industry = formData.industry === "other" && formData.otherIndustry.trim()
-      ? formData.otherIndustry.trim()
-      : formData.industry;
+    
+    const industry = data.industry === "other" && data.otherIndustry?.trim()
+      ? data.otherIndustry.trim()
+      : data.industry;
+    
     const newSupplier = {
-      ...formData,
+      ...data,
       certifications,
       industry,
       id: Date.now().toString(),
@@ -202,6 +157,7 @@ const SupplierRegistration = () => {
       riskCategory,
       submittedAt: new Date().toISOString()
     };
+
     fetch("http://localhost:8000/suppliers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -232,149 +188,187 @@ const SupplierRegistration = () => {
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="companyName" className="dark:text-white">Company Name *</Label>
-                <Input
-                  id="companyName"
-                  value={formData.companyName}
-                  onChange={(e) => handleInputChange("companyName", e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="email" className="dark:text-white">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  required
-                  aria-invalid={!!emailError}
-                  aria-describedby="email-error"
-                />
-                {emailError && (
-                  <p id="email-error" className="text-red-600 text-xs mt-1">{emailError}</p>
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company Name *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Email Address *</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="contactPerson" className="dark:text-white">Contact Person *</Label>
-                <Input
-                  id="contactPerson"
-                  value={formData.contactPerson}
-                  onChange={(e) => handleInputChange("contactPerson", e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="companyHouse" className="dark:text-white">Company House Number</Label>
-                <Input
-                  id="companyHouse"
-                  value={formData.companyHouse}
-                  onChange={(e) => handleInputChange("companyHouse", e.target.value)}
-                  placeholder="e.g., 12345678"
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="contactPerson"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Contact Person *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="companyHouse"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company House Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="e.g., 12345678" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="address" className="dark:text-white">Company Address *</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  placeholder="Enter company address"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone" className="dark:text-white">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  aria-invalid={!!phoneError}
-                  aria-describedby="phone-error"
-                />
-                {phoneError && (
-                  <p id="phone-error" className="text-red-600 text-xs mt-1">{phoneError}</p>
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company Address *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter company address" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
-              <div>
-                <Label htmlFor="country" className="dark:text-white">Country *</Label>
-                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={countryOpen}
-                      className="w-full justify-between"
-                    >
-                      {formData.country
-                        ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === formData.country)
-                        : "Select country..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search country..." />
-                      <CommandList>
-                        <CommandEmpty>No country found.</CommandEmpty>
-                        <CommandGroup>
-                          {countries.map((country) => (
-                            <CommandItem
-                              key={country}
-                              value={country}
-                              onSelect={(currentValue) => {
-                                const countryValue = country.toLowerCase().replace(/\s+/g, '-');
-                                handleInputChange("country", formData.country === countryValue ? "" : countryValue);
-                                setCountryOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.country === country.toLowerCase().replace(/\s+/g, '-') ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {country}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Phone Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Country *</FormLabel>
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between"
+                          >
+                            {field.value
+                              ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === field.value)
+                              : "Select country..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search country..." />
+                          <CommandList>
+                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandGroup>
+                              {countries.map((country) => (
+                                <CommandItem
+                                  key={country}
+                                  value={country}
+                                  onSelect={() => {
+                                    const countryValue = country.toLowerCase().replace(/\s+/g, '-');
+                                    field.onChange(countryValue);
+                                    setCountryOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === country.toLowerCase().replace(/\s+/g, '-') ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {country}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="md:col-span-2 flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
-                  <Label htmlFor="industry" className="dark:text-white">Industry *</Label>
-                  <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="construction">Construction</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={form.control}
+                    name="industry"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="dark:text-white">Industry *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select industry" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                            <SelectItem value="technology">Technology</SelectItem>
+                            <SelectItem value="healthcare">Healthcare</SelectItem>
+                            <SelectItem value="finance">Finance</SelectItem>
+                            <SelectItem value="retail">Retail</SelectItem>
+                            <SelectItem value="construction">Construction</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                {formData.industry === "other" && (
+                {form.watch("industry") === "other" && (
                   <div className="flex-1 flex flex-col justify-end">
-                    <Input
-                      id="otherIndustry"
-                      placeholder="Please specify your industry"
-                      value={formData.otherIndustry}
-                      onChange={e => handleInputChange("otherIndustry", e.target.value)}
+                    <FormField
+                      control={form.control}
+                      name="otherIndustry"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} placeholder="Please specify your industry" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
                 )}
@@ -384,7 +378,8 @@ const SupplierRegistration = () => {
         );
       
       case 2:
-        const isOtherChecked = formData.certifications.includes("Other");
+        const certifications = form.watch("certifications") || [];
+        const isOtherChecked = certifications.includes("Other");
         return (
           <div className="space-y-4">
             <div>
@@ -396,7 +391,7 @@ const SupplierRegistration = () => {
                   <div key={cert} className="flex items-center space-x-2">
                     <Checkbox
                       id={cert}
-                      checked={formData.certifications.includes(cert)}
+                      checked={certifications.includes(cert)}
                       onCheckedChange={(checked) => handleCertificationChange(cert, checked || false)}
                     />
                     <Label htmlFor={cert} className="dark:text-white">{cert}</Label>
@@ -404,12 +399,17 @@ const SupplierRegistration = () => {
                 ))}
                 {isOtherChecked && (
                   <div className="mt-2">
-                    <Input
-                      id="otherCertification"
-                      placeholder="Please specify other certification(s)"
-                      value={formData.otherCertification}
-                      onChange={e => handleInputChange("otherCertification", e.target.value)}
-                      className="w-full"
+                    <FormField
+                      control={form.control}
+                      name="otherCertification"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} placeholder="Please specify other certification(s)" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
                 )}
@@ -417,66 +417,89 @@ const SupplierRegistration = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="companySize" className="dark:text-white">Company Size</Label>
-                <Select value={formData.companySize} onValueChange={(value) => handleInputChange("companySize", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select company size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">Small (1-50 employees)</SelectItem>
-                    <SelectItem value="medium">Medium (51-200 employees)</SelectItem>
-                    <SelectItem value="large">Large (200+ employees)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="yearsInBusiness" className="dark:text-white">Years in Business</Label>
-                <Input
-                  id="yearsInBusiness"
-                  type="number"
-                  value={formData.yearsInBusiness}
-                  onChange={(e) => handleInputChange("yearsInBusiness", e.target.value)}
-                  placeholder="e.g., 5"
-                  aria-invalid={!!yearsInBusinessError}
-                  aria-describedby="years-in-business-error"
-                />
-                {yearsInBusinessError && (
-                  <p id="years-in-business-error" className="text-red-600 text-xs mt-1">{yearsInBusinessError}</p>
+              <FormField
+                control={form.control}
+                name="companySize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company Size *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select company size" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="small">Small (1-50 employees)</SelectItem>
+                        <SelectItem value="medium">Medium (51-200 employees)</SelectItem>
+                        <SelectItem value="large">Large (200+ employees)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="turnoverTime" className="dark:text-white">Turnover Time (in days)</Label>
-                <Input
-                  id="turnoverTime"
-                  type="number"
-                  value={formData.turnoverTime}
-                  onChange={(e) => handleInputChange("turnoverTime", e.target.value)}
-                  placeholder="e.g., 30"
-                  aria-invalid={!!turnoverTimeError}
-                  aria-describedby="turnover-time-error"
-                />
-                {turnoverTimeError && (
-                  <p id="turnover-time-error" className="text-red-600 text-xs mt-1">{turnoverTimeError}</p>
+              />
+              <FormField
+                control={form.control}
+                name="yearsInBusiness"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Years in Business *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="number" 
+                        placeholder="e.g., 5"
+                        onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="description" className="dark:text-white">Company Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                placeholder="Brief description of your company and services..."
-                rows={4}
               />
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="turnoverTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Turnover Time (in days) *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="number" 
+                        placeholder="e.g., 30"
+                        onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="dark:text-white">Company Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Brief description of your company and services..."
+                      rows={4}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         );
       
       case 3:
+        const formData = form.getValues();
         return (
           <div className="space-y-6">
             <div>
@@ -505,8 +528,8 @@ const SupplierRegistration = () => {
                 {formData.industry === 'other' && formData.otherIndustry && (
                   <p><strong>Other Industry:</strong> {formData.otherIndustry}</p>
                 )}
-                <p><strong>Certifications:</strong> {formData.certifications.join(', ') || 'None'}</p>
-                {formData.certifications.includes('Other') && formData.otherCertification && (
+                <p><strong>Certifications:</strong> {formData.certifications?.join(', ') || 'None'}</p>
+                {formData.certifications?.includes('Other') && formData.otherCertification && (
                   <p><strong>Other Certification(s):</strong> {formData.otherCertification}</p>
                 )}
                 <p><strong>Company Size:</strong> {formData.companySize || 'N/A'}</p>
@@ -517,17 +540,26 @@ const SupplierRegistration = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="terms"
-                checked={formData.agreeToTerms}
-                onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked)}
-                required
-              />
-              <Label htmlFor="terms" className="text-sm dark:text-gray-200">
-                I agree to the terms and conditions and privacy policy *
-              </Label>
-            </div>
+            <FormField
+              control={form.control}
+              name="agreeToTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-sm dark:text-gray-200">
+                      I agree to the terms and conditions and privacy policy *
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
           </div>
         );
     }
@@ -565,42 +597,37 @@ const SupplierRegistration = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {renderStep()}
-            
-            <div className="flex justify-between mt-8">
-              <Button
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-              >
-                Previous
-              </Button>
-              
-              {currentStep < totalSteps ? (
-                <Button
-                  onClick={handleNext}
-                  disabled={
-                    (currentStep === 1 && (!formData.companyName || !formData.email || !formData.contactPerson || !formData.country || !formData.industry || !!emailError)) ||
-                    (currentStep === 2 && (
-                      !formData.companySize ||
-                      !formData.yearsInBusiness ||
-                      !formData.turnoverTime ||
-                      (!!formData.phone && !!phoneError) ||
-                      !!yearsInBusinessError ||
-                      !!turnoverTimeError
-                    ))
-                  }
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!formData.agreeToTerms}
-                >
-                  Submit Registration
-                </Button>
-              )}
-            </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                {renderStep()}
+                
+                <div className="flex justify-between mt-8">
+                  <Button
+                    type="button"
+                    onClick={handlePrevious}
+                    disabled={currentStep === 1}
+                  >
+                    Previous
+                  </Button>
+                  
+                  {currentStep < totalSteps ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={!form.formState.isValid}
+                    >
+                      Submit Registration
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       </div>
