@@ -22,7 +22,7 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12 items-stretch">
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
-              <Users className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+              <Users className="h-16 w-16 text-green-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">New Supplier?</CardTitle>
               <CardDescription className="text-lg">
                 Register your company and get started with our onboarding process
@@ -40,7 +40,7 @@ const Index = () => {
           {/* Supplier Login Button */}
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
-              <Users className="h-16 w-16 text-green-600 mx-auto mb-4" />
+              <Users className="h-16 w-16 text-blue-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Supplier Login</CardTitle>
               <CardDescription className="text-lg">
                 Already registered? Access your supplier account and manage your profile here.
@@ -57,7 +57,7 @@ const Index = () => {
 
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
-              <Shield className="h-16 w-16 text-green-600 mx-auto mb-4" />
+              <Shield className="h-16 w-16 text-purple-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Admin Access</CardTitle>
               <CardDescription className="text-lg">
                 View and manage all supplier registrations and risk assessments
