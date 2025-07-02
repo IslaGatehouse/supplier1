@@ -22,8 +22,28 @@ const countries = [
 ];
 
 const SupplierRegistrationInvite = () => {
+  const [formData, setFormData] = useState({
+    companyName: "",
+    email: "",
+    contactPerson: "",
+    phone: "",
+    companyHouse: "",
+    address: "",
+    country: "",
+    industry: "",
+    otherIndustry: "",
+    certifications: [],
+    otherCertification: "",
+    companySize: "",
+    yearsInBusiness: "",
+    turnoverTime: "",
+    description: "",
+    agreeToTerms: false
+  });
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
   const navigate = useNavigate();
-  // ... (all the logic and JSX from SupplierRegistration, unchanged)
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="absolute top-4 left-4">
@@ -32,7 +52,37 @@ const SupplierRegistrationInvite = () => {
           Back
         </Button>
       </div>
-      {/* ...rest of the registration invite UI... */}
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Supplier Registration Invite</CardTitle>
+          <CardDescription>Enter your company details to continue registration.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6">
+            <div>
+              <Label htmlFor="companyName">Company Name *</Label>
+              <Input id="companyName" value={formData.companyName} onChange={e => handleInputChange("companyName", e.target.value)} required />
+            </div>
+            <div>
+              <Label htmlFor="email">Email Address *</Label>
+              <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange("email", e.target.value)} required />
+            </div>
+            <div>
+              <Label htmlFor="contactPerson">Contact Person *</Label>
+              <Input id="contactPerson" value={formData.contactPerson} onChange={e => handleInputChange("contactPerson", e.target.value)} required />
+            </div>
+            <div>
+              <Label htmlFor="companyHouse">Company House Number</Label>
+              <Input id="companyHouse" value={formData.companyHouse} onChange={e => handleInputChange("companyHouse", e.target.value)} placeholder="e.g., 12345678" />
+            </div>
+            <div>
+              <Label htmlFor="address">Company Address *</Label>
+              <Input id="address" value={formData.address} onChange={e => handleInputChange("address", e.target.value)} placeholder="Enter company address" required />
+            </div>
+            {/* Add other fields as needed */}
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

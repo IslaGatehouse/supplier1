@@ -48,6 +48,7 @@ const SupplierRegistration = () => {
     contactPerson: "",
     phone: "",
     companyHouse: "",
+    address: "",
     country: "",
     industry: "",
     otherIndustry: "",
@@ -280,6 +281,16 @@ const SupplierRegistration = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <Label htmlFor="address" className="dark:text-white">Company Address *</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Enter company address"
+                  required
+                />
+              </div>
+              <div>
                 <Label htmlFor="phone" className="dark:text-white">Phone Number</Label>
                 <Input
                   id="phone"
@@ -488,6 +499,7 @@ const SupplierRegistration = () => {
                 <p><strong>Email:</strong> {formData.email}</p>
                 <p><strong>Phone:</strong> {formData.phone || 'N/A'}</p>
                 <p><strong>Company House Number:</strong> {formData.companyHouse || 'N/A'}</p>
+                <p><strong>Address:</strong> {formData.address || 'N/A'}</p>
                 <p><strong>Country:</strong> {formData.country}</p>
                 <p><strong>Industry:</strong> {formData.industry}</p>
                 {formData.industry === 'other' && formData.otherIndustry && (
