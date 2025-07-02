@@ -9,72 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      supplier_profiles: {
-        Row: {
-          address: string
-          certifications: string[] | null
-          company_house: string | null
-          company_name: string
-          company_size: string
-          contact_person: string
-          country: string
-          created_at: string
-          description: string | null
-          email: string
-          id: string
-          industry: string
-          other_certification: string | null
-          other_industry: string | null
-          phone: string | null
-          turnover_time: number
-          updated_at: string
-          user_id: string
-          years_in_business: number
-        }
-        Insert: {
-          address: string
-          certifications?: string[] | null
-          company_house?: string | null
-          company_name: string
-          company_size: string
-          contact_person: string
-          country: string
-          created_at?: string
-          description?: string | null
-          email: string
-          id?: string
-          industry: string
-          other_certification?: string | null
-          other_industry?: string | null
-          phone?: string | null
-          turnover_time: number
-          updated_at?: string
-          user_id: string
-          years_in_business: number
-        }
-        Update: {
-          address?: string
-          certifications?: string[] | null
-          company_house?: string | null
-          company_name?: string
-          company_size?: string
-          contact_person?: string
-          country?: string
-          created_at?: string
-          description?: string | null
-          email?: string
-          id?: string
-          industry?: string
-          other_certification?: string | null
-          other_industry?: string | null
-          phone?: string | null
-          turnover_time?: number
-          updated_at?: string
-          user_id?: string
-          years_in_business?: number
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
