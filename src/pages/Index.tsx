@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Shield, Users, CheckCircle } from "lucide-react";
+import { Building2, Users, CheckCircle, UserCog, Shield, UserCheck } from "lucide-react";
 
 const Index = () => {
   return (
@@ -22,7 +22,7 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12 items-stretch">
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
-              <Users className="h-16 w-16 text-green-600 mx-auto mb-4" />
+              <UserCheck className="h-16 w-16 text-green-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Supplier Login</CardTitle>
               <CardDescription className="text-lg">
                 Already registered? Access your supplier account and manage your profile here.
@@ -56,7 +56,7 @@ const Index = () => {
 
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
-              <Shield className="h-16 w-16 text-purple-600 mx-auto mb-4" />
+              <UserCog className="h-16 w-16 text-purple-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Admin Access</CardTitle>
               <CardDescription className="text-lg">
                 View and manage all supplier registrations and risk assessments
