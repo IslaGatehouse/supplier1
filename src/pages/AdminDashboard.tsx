@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Search, Download, Shield, AlertTriangle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Search, Download, Shield, AlertTriangle, CheckCircle, ChevronsUpDown, Check } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface Supplier {
   id: string;
@@ -20,6 +23,14 @@ interface Supplier {
   submittedAt: string;
   certifications: string[];
   delayHistory: string;
+  phone?: string;
+  companyHouse?: string;
+  otherIndustry?: string;
+  otherCertification?: string;
+  companySize?: string;
+  yearsInBusiness?: string;
+  turnoverTime?: string;
+  description?: string;
 }
 
 const sampleSuppliers: Supplier[] = [
@@ -103,12 +114,40 @@ const sampleSuppliers: Supplier[] = [
   }
 ];
 
+const countries = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
+  "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
+  "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica",
+  "Croatia", "Cuba", "Cyprus", "Czech Republic", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador",
+  "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
+  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau",
+  "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland",
+  "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
+  "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
+  "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal",
+  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan",
+  "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania",
+  "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
+  "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea",
+  "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan",
+  "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela",
+  "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+];
+
 const AdminDashboard = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
+  const [countrySearch, setCountrySearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("az");
+  const [industryFilter, setIndustryFilter] = useState("all");
+  const [certificationFilter, setCertificationFilter] = useState("all");
+  const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
 
   useEffect(() => {
     // Load suppliers from localStorage or use sample data
@@ -144,8 +183,30 @@ const AdminDashboard = () => {
       filtered = filtered.filter(supplier => supplier.country === countryFilter);
     }
 
+    if (industryFilter !== "all") {
+      filtered = filtered.filter(supplier => supplier.industry === industryFilter);
+    }
+
+    if (certificationFilter !== "all") {
+      filtered = filtered.filter(supplier => (supplier.certifications || []).includes(certificationFilter));
+    }
+
+    // Sort by selected order
+    filtered = filtered.slice().sort((a, b) => {
+      if (sortOrder === "az") {
+        return a.companyName.localeCompare(b.companyName);
+      } else if (sortOrder === "za") {
+        return b.companyName.localeCompare(a.companyName);
+      } else if (sortOrder === "date-newest") {
+        return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
+      } else if (sortOrder === "date-oldest") {
+        return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+      }
+      return 0;
+    });
+
     setFilteredSuppliers(filtered);
-  }, [suppliers, searchTerm, riskFilter, countryFilter]);
+  }, [suppliers, searchTerm, riskFilter, countryFilter, industryFilter, certificationFilter, sortOrder]);
 
   const getRiskBadgeColor = (category: string) => {
     switch (category.toLowerCase()) {
@@ -200,8 +261,23 @@ const AdminDashboard = () => {
 
   const uniqueCountries = [...new Set(suppliers.map(s => s.country))];
 
+  // List of all countries for the filter dropdown
+  const allCountries = [
+    "united-states", "germany", "canada", "spain", "united-kingdom", "australia",
+    "france", "italy", "japan", "china", "india", "brazil", "mexico", "south-africa", "russia", "netherlands", "sweden", "norway", "switzerland", "singapore"
+  ];
+  const filteredCountries = allCountries.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase()));
+
+  // Get unique industries and certifications for filter dropdowns
+  const uniqueIndustries = [
+    ...new Set(suppliers.map(s => s.industry).filter(Boolean))
+  ];
+  const uniqueCertifications = [
+    ...new Set(suppliers.flatMap(s => s.certifications || []).filter(Boolean))
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <Link to="/">
@@ -213,8 +289,8 @@ const AdminDashboard = () => {
           
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage and review supplier registrations</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-white">Admin Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-200">Manage and review supplier registrations</p>
             </div>
             <Button onClick={exportToCSV} className="flex items-center">
               <Download className="h-4 w-4 mr-2" />
@@ -227,25 +303,25 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Suppliers</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200">Total Suppliers</CardTitle>
               <div className="text-2xl font-bold">{stats.total}</div>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Low Risk</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200">Low Risk</CardTitle>
               <div className="text-2xl font-bold text-green-600">{stats.lowRisk}</div>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Medium Risk</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200">Medium Risk</CardTitle>
               <div className="text-2xl font-bold text-yellow-600">{stats.mediumRisk}</div>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">High Risk</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200">High Risk</CardTitle>
               <div className="text-2xl font-bold text-red-600">{stats.highRisk}</div>
             </CardHeader>
           </Card>
@@ -254,11 +330,28 @@ const AdminDashboard = () => {
         {/* Filters */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
-            <CardDescription>Filter suppliers by various criteria</CardDescription>
+            <CardTitle className="dark:text-white">Filters</CardTitle>
+            <CardDescription className="dark:text-gray-200">Filter suppliers by various criteria</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Boxed Sort By Section */}
+            <div className="border rounded-lg p-4 bg-muted mb-4">
+              <h2 className="text-lg font-semibold mb-2 dark:text-white">Sort by</h2>
+              <div className="max-w-xs">
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="az">Company Name: A-Z</SelectItem>
+                    <SelectItem value="za">Company Name: Z-A</SelectItem>
+                    <SelectItem value="date-newest">Date: Newest to Oldest</SelectItem>
+                    <SelectItem value="date-oldest">Date: Oldest to Newest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -279,15 +372,92 @@ const AdminDashboard = () => {
                   <SelectItem value="high">High Risk</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={countryFilter} onValueChange={setCountryFilter}>
+              {/* Country Popover Filter */}
+              <Popover open={countryPopoverOpen} onOpenChange={setCountryPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryPopoverOpen}
+                    className="w-full justify-between"
+                  >
+                    {countryFilter !== "all"
+                      ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === countryFilter)
+                      : "All Countries"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search country..." />
+                    <CommandList>
+                      <CommandEmpty>No country found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          key="all"
+                          value="all"
+                          onSelect={() => {
+                            setCountryFilter("all");
+                            setCountryPopoverOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              countryFilter === "all" ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          All Countries
+                        </CommandItem>
+                        {countries.map((country) => {
+                          const countryValue = country.toLowerCase().replace(/\s+/g, '-');
+                          return (
+                            <CommandItem
+                              key={country}
+                              value={country}
+                              onSelect={() => {
+                                setCountryFilter(countryValue);
+                                setCountryPopoverOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  countryFilter === countryValue ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {country}
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {/* End Country Popover Filter */}
+              <Select value={industryFilter} onValueChange={setIndustryFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by country" />
+                  <SelectValue placeholder="Filter by industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  {uniqueCountries.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  <SelectItem value="all">All Industries</SelectItem>
+                  {uniqueIndustries.map(industry => (
+                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                   ))}
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={certificationFilter} onValueChange={setCertificationFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by certification" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Certifications</SelectItem>
+                  {uniqueCertifications.map(cert => (
+                    <SelectItem key={cert} value={cert}>{cert}</SelectItem>
+                  ))}
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -297,8 +467,8 @@ const AdminDashboard = () => {
         {/* Suppliers Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Suppliers ({filteredSuppliers.length})</CardTitle>
-            <CardDescription>All registered suppliers with their risk assessments</CardDescription>
+            <CardTitle className="dark:text-white">Suppliers ({filteredSuppliers.length})</CardTitle>
+            <CardDescription className="dark:text-gray-200">All registered suppliers with their risk assessments</CardDescription>
           </CardHeader>
           <CardContent>
             {filteredSuppliers.length === 0 ? (
@@ -312,8 +482,18 @@ const AdminDashboard = () => {
                     <TableRow>
                       <TableHead>Company</TableHead>
                       <TableHead>Contact</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Company House #</TableHead>
                       <TableHead>Country</TableHead>
                       <TableHead>Industry</TableHead>
+                      <TableHead>Other Industry</TableHead>
+                      <TableHead>Certifications</TableHead>
+                      <TableHead>Other Certification(s)</TableHead>
+                      <TableHead>Company Size</TableHead>
+                      <TableHead>Years in Business</TableHead>
+                      <TableHead>Turnover Time</TableHead>
+                      <TableHead>Description</TableHead>
                       <TableHead>Risk Score</TableHead>
                       <TableHead>Risk Level</TableHead>
                       <TableHead>Submitted</TableHead>
@@ -323,14 +503,21 @@ const AdminDashboard = () => {
                     {filteredSuppliers.map((supplier) => (
                       <TableRow key={supplier.id}>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{supplier.companyName}</div>
-                            <div className="text-sm text-gray-500">{supplier.email}</div>
-                          </div>
+                          <div className="font-medium">{supplier.companyName}</div>
                         </TableCell>
                         <TableCell>{supplier.contactPerson}</TableCell>
+                        <TableCell>{supplier.email}</TableCell>
+                        <TableCell>{supplier.phone || 'N/A'}</TableCell>
+                        <TableCell>{supplier.companyHouse || 'N/A'}</TableCell>
                         <TableCell>{supplier.country}</TableCell>
                         <TableCell>{supplier.industry}</TableCell>
+                        <TableCell>{supplier.otherIndustry || 'N/A'}</TableCell>
+                        <TableCell>{(supplier.certifications || []).join(', ') || 'None'}</TableCell>
+                        <TableCell>{supplier.otherCertification || 'N/A'}</TableCell>
+                        <TableCell>{supplier.companySize || 'N/A'}</TableCell>
+                        <TableCell>{supplier.yearsInBusiness || 'N/A'}</TableCell>
+                        <TableCell>{supplier.turnoverTime || 'N/A'}</TableCell>
+                        <TableCell>{supplier.description || 'N/A'}</TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <div className="w-16 bg-gray-200 rounded-full h-2">
