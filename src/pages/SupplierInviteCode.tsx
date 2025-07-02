@@ -16,8 +16,11 @@ const SupplierInviteCode = () => {
       setError("Please enter your invite code.");
       return;
     }
+    if (code !== "0000") {
+      setError("Invalid invite code. Please try again.");
+      return;
+    }
     setError("");
-    // For now, just navigate to the registration page
     navigate("/supplier-registration");
   };
 

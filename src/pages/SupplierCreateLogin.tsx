@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
-const SupplierLogin = () => {
+const SupplierCreateLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,34 +12,25 @@ const SupplierLogin = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder: No real authentication
     if (!username || !password) {
       setError("Please enter both username and password.");
       return;
     }
-    const storedUsername = localStorage.getItem("supplier-username");
-    const storedPassword = localStorage.getItem("supplier-password");
-    if (username !== storedUsername || password !== storedPassword) {
-      setError("Invalid username or password.");
-      return;
-    }
     setError("");
-    // Redirect or show success (for now, just redirect to home)
-    navigate("/");
+    // Store credentials in localStorage (for demo only)
+    localStorage.setItem("supplier-username", username);
+    localStorage.setItem("supplier-password", password);
+    navigate("/supplier-login");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="absolute top-4 left-4">
-        <Button variant="ghost" onClick={() => navigate("/start-registration")}> 
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Supplier Login</CardTitle>
-          <CardDescription>Enter your username and password to access your supplier account.</CardDescription>
+          <CardTitle>Create Your Supplier Login</CardTitle>
+          <CardDescription>
+            Set a username and password to access your supplier account in the future.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -51,7 +41,7 @@ const SupplierLogin = () => {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 autoComplete="username"
-                placeholder="Enter your username"
+                placeholder="Choose a username"
               />
             </div>
             <div>
@@ -61,12 +51,12 @@ const SupplierLogin = () => {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                autoComplete="current-password"
-                placeholder="Enter your password"
+                autoComplete="new-password"
+                placeholder="Choose a password"
               />
             </div>
             {error && <p className="text-red-600 text-sm">{error}</p>}
-            <Button type="submit" className="w-full">Login</Button>
+            <Button type="submit" className="w-full" disabled={!username || !password}>Create Login</Button>
           </form>
         </CardContent>
       </Card>
@@ -74,4 +64,4 @@ const SupplierLogin = () => {
   );
 };
 
-export default SupplierLogin; 
+export default SupplierCreateLogin; 

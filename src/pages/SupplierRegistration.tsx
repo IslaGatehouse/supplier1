@@ -215,7 +215,7 @@ const SupplierRegistration = () => {
           title: "Registration Submitted!",
           description: "Your supplier registration has been successfully submitted.",
         });
-        navigate("/confirmation", { state: { supplier: data } });
+        navigate("/supplier-create-login");
       })
       .catch(() => {
         toast({
