@@ -64,7 +64,7 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Link to="/admin">
+              <Link to="/admin-login">
                 <Button size="lg" className="w-full">
                   Admin Dashboard
                 </Button>
