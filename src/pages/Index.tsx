@@ -19,8 +19,8 @@ const Index = () => {
         </header>
 
         {/* Action Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12">
-          <Card className="hover:shadow-lg transition-shadow duration-300">
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12 items-stretch">
+          <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
               <Users className="h-16 w-16 text-blue-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">New Supplier?</CardTitle>
@@ -38,12 +38,12 @@ const Index = () => {
           </Card>
 
           {/* Supplier Login Button */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
+          <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
               <Users className="h-16 w-16 text-green-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Supplier Login</CardTitle>
               <CardDescription className="text-lg">
-                Access your supplier account and manage your profile
+                Already registered? Access your supplier account and manage your profile here.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
@@ -55,7 +55,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow duration-300">
+          <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
               <Shield className="h-16 w-16 text-green-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Admin Access</CardTitle>
