@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +25,7 @@ const SupplierRegistrationInvite = () => {
   const onSubmit = (data: SupplierInviteFormData) => {
     console.log("Invite form submitted:", data);
     // Handle invite form submission logic here
-    navigate("/supplier-registration");
+    navigate("/supplier-create-login");
   };
 
   return (

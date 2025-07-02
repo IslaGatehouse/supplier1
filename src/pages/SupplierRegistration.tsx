@@ -167,7 +167,7 @@ const SupplierRegistration = () => {
       title: "Registration Submitted!",
       description: "Your supplier registration has been successfully submitted.",
     });
-    navigate("/supplier-create-login");
+    navigate("/confirmation", { state: { supplier: newSupplier } });
   };
 
   const renderStep = () => {
