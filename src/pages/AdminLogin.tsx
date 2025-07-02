@@ -17,6 +17,10 @@ const AdminLogin = () => {
       setError("Please enter both username and password.");
       return;
     }
+    if (username !== "isla" || password !== "isla") {
+      setError("Invalid username or password.");
+      return;
+    }
     setError("");
     // Redirect or show success (for now, just redirect to admin dashboard)
     navigate("/admin");
