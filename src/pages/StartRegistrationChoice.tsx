@@ -32,7 +32,7 @@ const StartRegistrationChoice = () => {
           </Button>
           <Button
             className="w-full"
-            onClick={() => navigate("/supplier-registration-join")}
+            onClick={() => navigate("/supplier-registration")}
             variant="outline"
             size="lg"
           >
