@@ -158,28 +158,16 @@ const SupplierRegistration = () => {
       submittedAt: new Date().toISOString()
     };
 
-    fetch("http://localhost:8000/suppliers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newSupplier),
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to submit supplier");
-        return res.json();
-      })
-      .then(data => {
-        toast({
-          title: "Registration Submitted!",
-          description: "Your supplier registration has been successfully submitted.",
-        });
-        navigate("/supplier-create-login");
-      })
-      .catch(() => {
-        toast({
-          title: "Submission Failed",
-          description: "There was an error submitting your registration.",
-        });
-      });
+    // Add to localStorage for admin dashboard
+    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    suppliers.push(newSupplier);
+    localStorage.setItem("suppliers", JSON.stringify(suppliers));
+
+    toast({
+      title: "Registration Submitted!",
+      description: "Your supplier registration has been successfully submitted.",
+    });
+    navigate("/supplier-create-login");
   };
 
   const renderStep = () => {
