@@ -10,6 +10,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import NotFound from "./pages/NotFound";
+import StartRegistrationChoice from "./pages/StartRegistrationChoice";
+import SupplierInviteCode from "./pages/SupplierInviteCode";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
@@ -55,6 +57,9 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/start-registration" element={<StartRegistrationChoice />} />
+            <Route path="/supplier-registration-request" element={<SupplierInviteCode />} />
+            <Route path="/supplier-registration-join" element={<SupplierRegistration />} />
             <Route path="/supplier-registration" element={<SupplierRegistration />} />
             <Route path="/supplier-login" element={<SupplierLogin />} />
             <Route path="/admin-login" element={<AdminLogin />} />
