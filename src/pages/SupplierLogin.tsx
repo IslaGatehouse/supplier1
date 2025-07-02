@@ -25,8 +25,8 @@ const SupplierLogin = () => {
       return;
     }
     setError("");
-    // Redirect or show success (for now, just redirect to home)
-    navigate("/");
+    // Redirect or show success (for now, just redirect to supplier profile)
+    navigate("/supplier-profile");
   };
 
   return (
