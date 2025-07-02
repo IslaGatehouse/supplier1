@@ -22,7 +22,19 @@ const countries = [
 ];
 
 const SupplierRegistrationInvite = () => {
+  const navigate = useNavigate();
   // ... (all the logic and JSX from SupplierRegistration, unchanged)
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="absolute top-4 left-4">
+        <Button variant="ghost" onClick={() => navigate('/start-registration')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+      </div>
+      {/* ...rest of the registration invite UI... */}
+    </div>
+  );
 };
 
 export default SupplierRegistrationInvite; 
