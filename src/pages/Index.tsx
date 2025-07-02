@@ -23,24 +23,6 @@ const Index = () => {
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
               <Users className="h-16 w-16 text-green-600 mx-auto mb-4" />
-              <CardTitle className="text-2xl">New Supplier?</CardTitle>
-              <CardDescription className="text-lg">
-                Register your company and get started with our onboarding process
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <Link to="/supplier-registration">
-                <Button size="lg" className="w-full">
-                  Start Registration
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* Supplier Login Button */}
-          <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
-            <CardHeader className="text-center">
-              <Users className="h-16 w-16 text-blue-600 mx-auto mb-4" />
               <CardTitle className="text-2xl">Supplier Login</CardTitle>
               <CardDescription className="text-lg">
                 Already registered? Access your supplier account and manage your profile here.
@@ -50,6 +32,23 @@ const Index = () => {
               <Link to="/supplier-login">
                 <Button size="lg" className="w-full">
                   Supplier Login
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
+            <CardHeader className="text-center">
+              <Users className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+              <CardTitle className="text-2xl">New Supplier?</CardTitle>
+              <CardDescription className="text-lg">
+                Register your company and get started with our onboarding process
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Link to="/supplier-registration">
+                <Button size="lg" className="w-full">
+                  Start Registration
                 </Button>
               </Link>
             </CardContent>
