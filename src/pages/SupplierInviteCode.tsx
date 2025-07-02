@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const SupplierInviteCode = () => {
   const [code, setCode] = useState("");
@@ -22,6 +23,12 @@ const SupplierInviteCode = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="absolute top-4 left-4">
+        <Button variant="ghost" onClick={() => navigate("/")}> 
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Enter Invite Code</CardTitle>
@@ -43,6 +50,10 @@ const SupplierInviteCode = () => {
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <Button type="submit" className="w-full">Continue</Button>
           </form>
+          <Button variant="ghost" className="mt-6 w-full" onClick={() => navigate("/start-registration")}> 
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Previous Page
+          </Button>
         </CardContent>
       </Card>
     </div>

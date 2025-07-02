@@ -1,12 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const StartRegistrationChoice = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="absolute top-4 left-4">
+        <Button variant="ghost" onClick={() => navigate("/")}> 
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Start Registration</CardTitle>
