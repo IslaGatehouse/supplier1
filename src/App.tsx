@@ -12,6 +12,8 @@ import ConfirmationPage from "./pages/ConfirmationPage";
 import NotFound from "./pages/NotFound";
 import StartRegistrationChoice from "./pages/StartRegistrationChoice";
 import SupplierInviteCode from "./pages/SupplierInviteCode";
+import SupplierAuth from "./pages/SupplierAuth";
+import SupplierProfile from "./pages/SupplierProfile";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
@@ -62,6 +64,8 @@ const App = () => {
             <Route path="/supplier-registration-join" element={<SupplierRegistration />} />
             <Route path="/supplier-registration" element={<SupplierRegistration />} />
             <Route path="/supplier-login" element={<SupplierLogin />} />
+            <Route path="/supplier-auth" element={<SupplierAuth />} />
+            <Route path="/supplier-profile" element={<SupplierProfile />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
