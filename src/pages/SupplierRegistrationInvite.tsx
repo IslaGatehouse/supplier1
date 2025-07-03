@@ -283,50 +283,52 @@ const SupplierRegistrationInvite = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="industry"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-white">Industry *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select industry" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="retail">Retail</SelectItem>
-                        <SelectItem value="construction">Construction</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            {form.watch("industry") === "other" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex-1">
                 <FormField
                   control={form.control}
-                  name="otherIndustryText"
+                  name="industry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your industry" {...field} />
-                      </FormControl>
+                      <FormLabel className="dark:text-white">Industry *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select industry" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                          <SelectItem value="technology">Technology</SelectItem>
+                          <SelectItem value="healthcare">Healthcare</SelectItem>
+                          <SelectItem value="finance">Finance</SelectItem>
+                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="construction">Construction</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                {form.watch("industry") === "other" && (
+                  <div className="mt-2">
+                    <FormField
+                      control={form.control}
+                      name="otherIndustryText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter your industry" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         );
       case 2:

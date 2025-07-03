@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 
 const SupplierCreateLogin = () => {
-  const [username, setUsername] = useState("test");
-  const [password, setPassword] = useState("test");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     // Auto-create the test login on mount
@@ -83,16 +85,24 @@ const SupplierCreateLogin = () => {
                 placeholder="Choose a username"
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="block mb-1 font-medium">Password</label>
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 autoComplete="new-password"
                 placeholder="Choose a password"
               />
+              <button
+                type="button"
+                className="absolute right-3 top-9 text-gray-500 focus:outline-none"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
               <ul className="mt-2 space-y-1 text-xs">
                 {passwordChecks.map((check, idx) => (
                   <li key={idx} className="flex items-center">

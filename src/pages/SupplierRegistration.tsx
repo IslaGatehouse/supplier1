@@ -232,7 +232,6 @@ const SupplierRegistration = () => {
                 )}
               />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -260,6 +259,8 @@ const SupplierRegistration = () => {
                   </FormItem>
                 )}
               />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="country"
@@ -342,25 +343,25 @@ const SupplierRegistration = () => {
                     </FormItem>
                   )}
                 />
+                {form.watch("industry") === "other" && (
+                  <div className="mt-2">
+                    <FormField
+                      control={form.control}
+                      name="otherIndustryText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter your industry" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             </div>
-            {form.watch("industry") === "other" && (
-              <div className="flex-1 flex flex-col justify-end">
-                <FormField
-                  control={form.control}
-                  name="otherIndustryText"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your industry" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
           </div>
         );
       
