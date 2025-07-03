@@ -64,6 +64,7 @@ const SupplierRegistration = () => {
   const [emailError, setEmailError] = useState("");
   const [yearsInBusinessError, setYearsInBusinessError] = useState("");
   const [turnoverTimeError, setTurnoverTimeError] = useState("");
+  const [addressError, setAddressError] = useState("");
 
   const totalSteps = 3;
   const progressPercentage = (currentStep / totalSteps) * 100;
@@ -85,6 +86,14 @@ const SupplierRegistration = () => {
     if (!value) return ""; // No error if empty (should be required by form)
     if (!regex.test(value)) {
       return "Please enter a valid email address.";
+    }
+    return "";
+  };
+
+  const validateAddress = (value: string) => {
+    if (!value) return "Please enter a complete address.";
+    if (value.length < 5) {
+      return "Please enter a complete address.";
     }
     return "";
   };
@@ -113,6 +122,10 @@ const SupplierRegistration = () => {
     if (field === "email") {
       const error = validateEmail(value);
       setEmailError(error);
+    }
+    if (field === "address") {
+      const error = validateAddress(value);
+      setAddressError(error);
     }
     if (field === "yearsInBusiness") {
       const error = validateYearsInBusiness(value);
@@ -288,7 +301,12 @@ const SupplierRegistration = () => {
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   required
                   placeholder="Enter company address"
+                  aria-invalid={!!addressError}
+                  aria-describedby="address-error"
                 />
+                {addressError && (
+                  <p id="address-error" className="text-red-600 text-xs mt-1">{addressError}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="phone" className="dark:text-white">Phone Number</Label>
@@ -582,7 +600,7 @@ const SupplierRegistration = () => {
                 <Button
                   onClick={handleNext}
                   disabled={
-                    (currentStep === 1 && (!formData.companyName || !formData.email || !formData.contactPerson || !formData.country || !formData.industry || !!emailError)) ||
+                    (currentStep === 1 && (!formData.companyName || !formData.email || !formData.contactPerson || !formData.country || !formData.industry || !formData.address || !!emailError || !!addressError)) ||
                     (currentStep === 2 && (
                       !formData.companySize ||
                       !formData.yearsInBusiness ||
