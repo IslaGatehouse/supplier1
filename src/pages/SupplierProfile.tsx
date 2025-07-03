@@ -168,10 +168,6 @@ const SupplierProfile = () => {
   // Logout handler
   const handleLogout = () => {
     localStorage.removeItem('loggedin');
-    localStorage.removeItem('supplier-username');
-    localStorage.removeItem('supplier-password');
-    localStorage.removeItem('supplier-email');
-    localStorage.removeItem('supplier-companyName');
     navigate('/supplier-login');
   };
 
