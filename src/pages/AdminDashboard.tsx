@@ -31,6 +31,7 @@ interface Supplier {
   yearsInBusiness?: string;
   turnoverTime?: string;
   description?: string;
+  registrationType?: string;
 }
 
 const sampleSuppliers: Supplier[] = [
@@ -45,7 +46,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Low",
     submittedAt: "2024-01-15T10:30:00Z",
     certifications: ["ISO 9001", "SOC 2"],
-    delayHistory: "excellent"
+    delayHistory: "excellent",
+    registrationType: 'self'
   },
   {
     id: "2",
@@ -58,7 +60,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Medium",
     submittedAt: "2024-01-20T14:15:00Z",
     certifications: ["ISO 9001", "ISO 14001"],
-    delayHistory: "good"
+    delayHistory: "good",
+    registrationType: 'self'
   },
   {
     id: "3",
@@ -71,7 +74,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Low",
     submittedAt: "2024-01-25T09:45:00Z",
     certifications: ["ISO 9001", "ISO 45001", "GDPR Compliant"],
-    delayHistory: "excellent"
+    delayHistory: "excellent",
+    registrationType: 'self'
   },
   {
     id: "4",
@@ -84,7 +88,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "High",
     submittedAt: "2024-02-01T16:20:00Z",
     certifications: ["ISO 45001"],
-    delayHistory: "frequent"
+    delayHistory: "frequent",
+    registrationType: 'self'
   },
   {
     id: "5",
@@ -97,7 +102,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Low",
     submittedAt: "2024-02-05T11:10:00Z",
     certifications: ["SOC 2", "GDPR Compliant"],
-    delayHistory: "excellent"
+    delayHistory: "excellent",
+    registrationType: 'self'
   },
   {
     id: "6",
@@ -110,7 +116,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Medium",
     submittedAt: "2024-02-10T13:30:00Z",
     certifications: ["ISO 9001"],
-    delayHistory: "occasional"
+    delayHistory: "occasional",
+    registrationType: 'self'
   }
 ];
 
@@ -481,6 +488,7 @@ const AdminDashboard = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Company</TableHead>
+                      <TableHead>Registration Type</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
@@ -504,6 +512,9 @@ const AdminDashboard = () => {
                       <TableRow key={supplier.id}>
                         <TableCell>
                           <div className="font-medium">{supplier.companyName}</div>
+                        </TableCell>
+                        <TableCell>
+                          {supplier.registrationType === 'self' ? 'Self' : supplier.registrationType === 'invite' ? 'Invited' : 'Unknown'}
                         </TableCell>
                         <TableCell>{supplier.contactPerson}</TableCell>
                         <TableCell>{supplier.email}</TableCell>

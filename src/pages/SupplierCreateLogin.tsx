@@ -8,9 +8,11 @@ import { Eye, EyeOff } from "lucide-react";
 const SupplierCreateLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
   useEffect(() => {
     // Auto-create the test login on mount
@@ -49,12 +51,16 @@ const SupplierCreateLogin = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) {
-      setError("Please enter both username and password.");
+    if (!username || !password || !repeatPassword) {
+      setError("Please enter username and both password fields.");
       return;
     }
     if (!validatePassword(password)) {
       setError("Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
+      return;
+    }
+    if (password !== repeatPassword) {
+      setError("Passwords do not match.");
       return;
     }
     setError("");
@@ -121,8 +127,30 @@ const SupplierCreateLogin = () => {
                 ))}
               </ul>
             </div>
+            <div className="relative">
+              <label htmlFor="repeat-password" className="block mb-1 font-medium">Repeat Password</label>
+              <Input
+                id="repeat-password"
+                type={showRepeatPassword ? "text" : "password"}
+                value={repeatPassword}
+                onChange={e => setRepeatPassword(e.target.value)}
+                autoComplete="new-password"
+                placeholder="Repeat your password"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-9 text-gray-500 focus:outline-none"
+                onClick={() => setShowRepeatPassword((prev) => !prev)}
+                aria-label={showRepeatPassword ? "Hide password" : "Show password"}
+              >
+                {showRepeatPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+              {repeatPassword && password && repeatPassword !== password && (
+                <p className="text-red-600 text-xs mt-1">Passwords do not match.</p>
+              )}
+            </div>
             {error && <p className="text-red-600 text-sm">{error}</p>}
-            <Button type="submit" className="w-full" disabled={!username || !password || !validatePassword(password)}>Create Login</Button>
+            <Button type="submit" className="w-full" disabled={!username || !password || !repeatPassword || !validatePassword(password) || password !== repeatPassword}>Create Login</Button>
           </form>
         </CardContent>
       </Card>

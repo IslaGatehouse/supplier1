@@ -126,7 +126,8 @@ const SupplierRegistrationInvite = () => {
       id: Date.now().toString(),
       riskScore,
       riskCategory,
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      registrationType: 'invite'
     };
     // Add to localStorage for admin dashboard
     const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");

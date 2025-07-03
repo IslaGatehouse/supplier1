@@ -155,7 +155,8 @@ const SupplierRegistration = () => {
       id: Date.now().toString(),
       riskScore,
       riskCategory,
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      registrationType: 'self'
     };
 
     // Add to localStorage for admin dashboard
@@ -438,6 +439,7 @@ const SupplierRegistration = () => {
                         {...field} 
                         type="number" 
                         placeholder="e.g., 5"
+                        value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
                       />
                     </FormControl>
