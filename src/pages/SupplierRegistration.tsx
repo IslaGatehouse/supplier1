@@ -95,6 +95,9 @@ const SupplierRegistration = () => {
     const isValid = await form.trigger(fieldsToValidate);
     
     if (isValid && currentStep < totalSteps) {
+      if (currentStep === 1) {
+        form.setValue("yearsInBusiness", "");
+      }
       setCurrentStep(prev => prev + 1);
     }
   };

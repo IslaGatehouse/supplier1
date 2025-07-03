@@ -10,6 +10,7 @@ import { ArrowLeft, Search, Download, Shield, AlertTriangle, CheckCircle, Chevro
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Supplier {
   id: string;
@@ -156,6 +157,7 @@ const AdminDashboard = () => {
   const [certificationFilter, setCertificationFilter] = useState("all");
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Load suppliers from localStorage or use sample data
@@ -517,9 +519,24 @@ const AdminDashboard = () => {
                             pendingIds.includes(supplier.id) ? (
                               <Badge className="bg-amber-100 text-amber-800 border-amber-200 py-1 px-3 text-sm rounded-md">Pending</Badge>
                             ) : (
-                              <Button size="sm" onClick={() => {
-                                window.alert(`Email sent to ${supplier.email} with link: ${window.location.origin}/supplier-create-login`);
-                                setPendingIds(prev => [...prev, supplier.id]);
+                              <Button size="sm" onClick={async () => {
+                                const link = `${window.location.origin}/supplier-create-login`;
+                                try {
+                                  const res = await fetch("http://localhost:8000/send-invite-email", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ email: supplier.email, link }),
+                                  });
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    setPendingIds(prev => [...prev, supplier.id]);
+                                    toast({ title: "Email sent!", description: `Invite sent to ${supplier.email}` });
+                                  } else {
+                                    toast({ title: "Error", description: data.error || "Failed to send email", variant: "destructive" });
+                                  }
+                                } catch (err) {
+                                  toast({ title: "Error", description: "Failed to send email", variant: "destructive" });
+                                }
                               }}>
                                 Accept
                               </Button>
