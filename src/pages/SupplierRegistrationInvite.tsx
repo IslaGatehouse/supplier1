@@ -484,7 +484,7 @@ const SupplierRegistrationInvite = () => {
                   }));
                   setUploadedDocs(prev => [...prev, ...newDocs]);
                 }} />
-                <Button variant="outline" onClick={() => document.getElementById('fileUpload')?.click()}>
+                <Button type="button" variant="outline" onClick={() => document.getElementById('fileUpload')?.click()}>
                   Choose Files
                 </Button>
                 {uploadedDocs.length > 0 && (
