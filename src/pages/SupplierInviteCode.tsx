@@ -21,7 +21,7 @@ const SupplierInviteCode = () => {
       return;
     }
     setError("");
-    navigate("/supplier-registration");
+    navigate("/supplier-registration-invite");
   };
 
   return (
