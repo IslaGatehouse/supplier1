@@ -225,6 +225,9 @@ const SupplierRegistration = () => {
         return res.json();
       })
       .then(data => {
+        // Save to localStorage for admin dashboard
+        const storedSuppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+        localStorage.setItem("suppliers", JSON.stringify([...storedSuppliers, newSupplier]));
         toast({
           title: "Registration Submitted!",
           description: "Your supplier registration has been successfully submitted.",
