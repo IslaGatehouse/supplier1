@@ -155,6 +155,7 @@ const AdminDashboard = () => {
   const [industryFilter, setIndustryFilter] = useState("all");
   const [certificationFilter, setCertificationFilter] = useState("all");
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
 
   useEffect(() => {
     // Load suppliers from localStorage or use sample data
@@ -487,6 +488,7 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Action</TableHead>
                       <TableHead>Company</TableHead>
                       <TableHead>Registration Type</TableHead>
                       <TableHead>Contact</TableHead>
@@ -510,6 +512,22 @@ const AdminDashboard = () => {
                   <TableBody>
                     {filteredSuppliers.map((supplier) => (
                       <TableRow key={supplier.id}>
+                        <TableCell>
+                          {supplier.registrationType === 'self' ? (
+                            pendingIds.includes(supplier.id) ? (
+                              <Badge className="bg-amber-100 text-amber-800 border-amber-200 py-1 px-3 text-sm rounded-md">Pending</Badge>
+                            ) : (
+                              <Button size="sm" onClick={() => {
+                                window.alert(`Email sent to ${supplier.email} with link: ${window.location.origin}/supplier-create-login`);
+                                setPendingIds(prev => [...prev, supplier.id]);
+                              }}>
+                                Accept
+                              </Button>
+                            )
+                          ) : (
+                            <Badge className="bg-green-100 text-green-800 border-green-200 py-1 px-3 text-sm rounded-md">Join</Badge>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div className="font-medium">{supplier.companyName}</div>
                         </TableCell>
