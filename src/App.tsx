@@ -17,6 +17,7 @@ import { Sun, Moon } from "lucide-react";
 import SupplierLogin from "./pages/SupplierLogin";
 import SupplierProfile from "./pages/SupplierProfile";
 import ConfirmationPageInvite from "./pages/ConfirmationPageInvite";
+import SupplierRegistrationInvite from "./pages/SupplierRegistrationInvite";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
             <Route path="/confirmation-invite" element={<ConfirmationPageInvite />} />
+            <Route path="/supplier-registration-invite" element={<SupplierRegistrationInvite />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
