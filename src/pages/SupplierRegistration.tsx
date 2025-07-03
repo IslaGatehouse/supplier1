@@ -57,7 +57,8 @@ const SupplierRegistration = () => {
     yearsInBusiness: "",
     turnoverTime: "",
     description: "",
-    agreeToTerms: false
+    agreeToTerms: false,
+    address: ""
   });
   const [phoneError, setPhoneError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -280,6 +281,16 @@ const SupplierRegistration = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <Label htmlFor="address" className="dark:text-white">Company Address *</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  required
+                  placeholder="Enter company address"
+                />
+              </div>
+              <div>
                 <Label htmlFor="phone" className="dark:text-white">Phone Number</Label>
                 <Input
                   id="phone"
@@ -292,6 +303,9 @@ const SupplierRegistration = () => {
                   <p id="phone-error" className="text-red-600 text-xs mt-1">{phoneError}</p>
                 )}
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="country" className="dark:text-white">Country *</Label>
                 <Popover open={countryOpen} onOpenChange={setCountryOpen}>
@@ -488,6 +502,7 @@ const SupplierRegistration = () => {
                 <p><strong>Email:</strong> {formData.email}</p>
                 <p><strong>Phone:</strong> {formData.phone || 'N/A'}</p>
                 <p><strong>Company House Number:</strong> {formData.companyHouse || 'N/A'}</p>
+                <p><strong>Company Address:</strong> {formData.address || 'N/A'}</p>
                 <p><strong>Country:</strong> {formData.country}</p>
                 <p><strong>Industry:</strong> {formData.industry}</p>
                 {formData.industry === 'other' && formData.otherIndustry && (

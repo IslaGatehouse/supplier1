@@ -22,10 +22,21 @@ const SupplierRegistrationInvite = () => {
     }
   });
 
-  const onSubmit = (data: SupplierInviteFormData) => {
-    console.log("Invite form submitted:", data);
-    // Handle invite form submission logic here
-    navigate("/supplier-create-login");
+  const onSubmit = async (data: SupplierInviteFormData) => {
+    try {
+      const response = await fetch("http://localhost:8000/suppliers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to submit invite registration");
+      // Optionally, you can show a toast here
+      navigate("/supplier-create-login");
+    } catch (error) {
+      // Optionally, you can show a toast or error message here
+      console.error("Invite registration submission failed:", error);
+      alert("There was an error submitting your registration. Please try again.");
+    }
   };
 
   return (
