@@ -510,6 +510,7 @@ const AdminDashboard = () => {
                       <TableHead>Risk Level</TableHead>
                       <TableHead>Submitted</TableHead>
                     </TableRow>
+                    
                   </TableHeader>
                   <TableBody>
                     {filteredSuppliers.map((supplier) => (

@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import Cropper from 'react-easy-crop';
 
 const countries = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
@@ -52,26 +51,25 @@ const companySizeOptions = [
   { value: "large", label: "Large (200+ employees)" }
 ];
 
-function getCroppedImg(imageSrc, crop, zoom, aspect = 1) {
+function getCroppedImg(imageSrc, croppedAreaPixels, zoom, aspect = 1) {
   return new Promise((resolve, reject) => {
     const image = new window.Image();
     image.src = imageSrc;
     image.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const size = Math.min(image.width, image.height);
-      canvas.width = crop.width;
-      canvas.height = crop.height;
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
       ctx.drawImage(
         image,
-        crop.x,
-        crop.y,
-        crop.width,
-        crop.height,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
         0,
         0,
-        crop.width,
-        crop.height
+        croppedAreaPixels.width,
+        croppedAreaPixels.height
       );
       resolve(canvas.toDataURL('image/jpeg'));
     };
@@ -85,11 +83,6 @@ const SupplierProfile = () => {
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showCrop, setShowCrop] = useState(false);
-  const [cropImgSrc, setCropImgSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   useEffect(() => {
     // Get supplier info from localStorage (from suppliers array)
@@ -223,44 +216,28 @@ const SupplierProfile = () => {
     setEditData(null);
   };
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
   // Handle profile picture upload
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        setCropImgSrc(ev.target?.result as string);
-        setShowCrop(true);
+        const base64 = ev.target?.result as string;
+        if (editMode) {
+          setEditData((prev: any) => ({ ...prev, profilePicture: base64 }));
+        } else {
+          // Save directly if not in edit mode
+          const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+          const idx = suppliers.findIndex((s: any) => s.id === supplier.id);
+          if (idx !== -1) {
+            suppliers[idx] = { ...suppliers[idx], profilePicture: base64 };
+            localStorage.setItem("suppliers", JSON.stringify(suppliers));
+            setSupplier(suppliers[idx]);
+          }
+        }
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleCropSave = async () => {
-    if (!cropImgSrc || !croppedAreaPixels) return;
-    const croppedImg = await getCroppedImg(cropImgSrc, croppedAreaPixels, zoom);
-    if (editMode) {
-      setEditData((prev: any) => ({ ...prev, profilePicture: croppedImg }));
-    } else {
-      const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-      const idx = suppliers.findIndex((s: any) => s.id === supplier.id);
-      if (idx !== -1) {
-        suppliers[idx] = { ...suppliers[idx], profilePicture: croppedImg };
-        localStorage.setItem("suppliers", JSON.stringify(suppliers));
-        setSupplier(suppliers[idx]);
-      }
-    }
-    setShowCrop(false);
-    setCropImgSrc(null);
-  };
-
-  const handleCropCancel = () => {
-    setShowCrop(false);
-    setCropImgSrc(null);
   };
 
   return (
@@ -295,27 +272,6 @@ const SupplierProfile = () => {
               {((editMode ? editData?.profilePicture : supplier?.profilePicture)) ? 'Change Profile Picture' : 'Upload Profile Picture'}
             </Button>
           </div>
-          {showCrop && cropImgSrc && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-              <div className="bg-white rounded-lg p-6 w-[90vw] max-w-md flex flex-col items-center">
-                <div className="relative w-64 h-64 bg-gray-200">
-                  <Cropper
-                    image={cropImgSrc}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={onCropComplete}
-                  />
-                </div>
-                <div className="flex gap-4 mt-4">
-                  <Button variant="outline" onClick={handleCropCancel}>Cancel</Button>
-                  <Button onClick={handleCropSave}>Save</Button>
-                </div>
-              </div>
-            </div>
-          )}
           <div className="flex gap-2 mt-2">
             {riskBadge}
             {regTypeBadge}

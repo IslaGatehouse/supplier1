@@ -143,7 +143,7 @@ const SupplierRegistrationInvite = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
+  return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -579,13 +579,13 @@ const SupplierRegistrationInvite = () => {
                   ) : (
                     <Button type="submit" disabled={!form.watch("agreeToTerms") || !form.formState.isValid}>
                       Submit Registration
-                    </Button>
+              </Button>
                   )}
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
       </div>
     </div>
   );
