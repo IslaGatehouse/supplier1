@@ -63,6 +63,7 @@ const SupplierRegistrationInvite = () => {
       country: "",
       otherIndustry: "",
       certifications: [],
+      otherCertification: "",
       companySize: "",
       yearsInBusiness: "",
       turnoverTime: "",
