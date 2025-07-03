@@ -2,19 +2,22 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const SupplierProfile = () => {
   const navigate = useNavigate();
   const [supplier, setSupplier] = useState<any>(null);
 
   useEffect(() => {
-    // For demo: get supplier info from localStorage
-    const username = localStorage.getItem("supplier-username");
-    const email = localStorage.getItem("supplier-email");
-    const companyName = localStorage.getItem("supplier-companyName");
-    if (username && companyName) {
-      setSupplier({ username, email, companyName });
+    // Get supplier info from localStorage (from suppliers array)
+    const storedUsername = localStorage.getItem("supplier-username");
+    const storedEmail = localStorage.getItem("supplier-email");
+    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    let found = null;
+    if (storedUsername) {
+      found = suppliers.find((s: any) => s.email === storedEmail || s.username === storedUsername || s.companyName === localStorage.getItem("supplier-companyName"));
     }
+    setSupplier(found);
   }, []);
 
   if (!supplier) {
@@ -35,21 +38,23 @@ const SupplierProfile = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Supplier Profile</CardTitle>
-          <CardDescription>Welcome, {supplier.username}!</CardDescription>
+          <CardDescription>Welcome, {supplier.companyName || supplier.username}!</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <strong>Company Name:</strong> {supplier.companyName}
-            </div>
-            {supplier.email && (
-              <div>
-                <strong>Email:</strong> {supplier.email}
-              </div>
-            )}
+            <Table>
+              <TableBody>
+                {Object.entries(supplier).map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableHead className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</TableHead>
+                    <TableCell>{Array.isArray(value) ? value.join(", ") : String(value)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
             <Button className="mt-4 w-full" onClick={() => navigate("/")}>Back to Home</Button>
           </div>
         </CardContent>

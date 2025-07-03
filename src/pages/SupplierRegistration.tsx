@@ -96,7 +96,10 @@ const SupplierRegistration = () => {
     
     if (isValid && currentStep < totalSteps) {
       if (currentStep === 1) {
-        form.setValue("yearsInBusiness", "");
+        const yib = form.getValues("yearsInBusiness");
+        if (yib && isNaN(Number(yib))) {
+          form.setValue("yearsInBusiness", "");
+        }
       }
       setCurrentStep(prev => prev + 1);
     }
@@ -229,7 +232,13 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Company House Number</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="e.g., 12345678" />
+                      <Input
+                        {...field}
+                        id="company-house-number"
+                        name="company-house-number"
+                        placeholder="e.g., 12345678"
+                        autoComplete="off"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -438,11 +447,14 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Years in Business *</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        type="number" 
+                      <Input
+                        {...field}
+                        id="years-in-business"
+                        name="years-in-business"
+                        type="number"
                         placeholder="e.g., 5"
-                        value={field.value || ""}
+                        value={form.getValues('yearsInBusiness') || ""}
+                        autoComplete="off"
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
                       />
                     </FormControl>
@@ -562,9 +574,9 @@ const SupplierRegistration = () => {
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
+          <Button variant="ghost" onClick={() => navigate("/start-registration")} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            Back
           </Button>
           
           <div className="flex items-center mb-4">
@@ -591,7 +603,7 @@ const SupplierRegistration = () => {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
+              <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
                 {renderStep()}
                 
                 <div className="flex justify-between mt-8">
