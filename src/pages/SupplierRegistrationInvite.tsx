@@ -413,6 +413,7 @@ const SupplierRegistrationInvite = () => {
                         {...field} 
                         type="number" 
                         placeholder="e.g., 5"
+                        value={form.getValues('yearsInBusiness') || ''}
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
                       />
                     </FormControl>
