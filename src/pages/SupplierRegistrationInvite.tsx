@@ -49,6 +49,7 @@ const SupplierRegistrationInvite = () => {
   const totalSteps = 3;
   const progressPercentage = (currentStep / totalSteps) * 100;
   const [countryOpen, setCountryOpen] = useState(false);
+  const [uploadedDocs, setUploadedDocs] = useState<{name: string, data: string}[]>([]);
 
   const form = useForm<SupplierInviteFormData>({
     resolver: zodResolver(supplierInviteSchema),
@@ -127,7 +128,8 @@ const SupplierRegistrationInvite = () => {
       riskScore,
       riskCategory,
       submittedAt: new Date().toISOString(),
-      registrationType: 'invite'
+      registrationType: 'invite',
+      documents: uploadedDocs,
     };
     // Add to localStorage for admin dashboard
     const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
@@ -471,10 +473,30 @@ const SupplierRegistrationInvite = () => {
               <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-2">Upload company certificates, licenses, or other relevant documents</p>
-                <Input id="fileUpload" type="file" multiple className="hidden" />
+                <Input id="fileUpload" type="file" multiple className="hidden" onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  const newDocs = await Promise.all(files.map(file => {
+                    return new Promise<{name: string, data: string}>((resolve) => {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => resolve({ name: file.name, data: ev.target?.result as string });
+                      reader.readAsDataURL(file);
+                    });
+                  }));
+                  setUploadedDocs(prev => [...prev, ...newDocs]);
+                }} />
                 <Button variant="outline" onClick={() => document.getElementById('fileUpload')?.click()}>
                   Choose Files
                 </Button>
+                {uploadedDocs.length > 0 && (
+                  <div className="mt-4 text-left">
+                    <div className="font-medium mb-1">Selected Files:</div>
+                    <ul className="text-sm text-gray-700">
+                      {uploadedDocs.map((doc, idx) => (
+                        <li key={idx}>{doc.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -501,6 +523,16 @@ const SupplierRegistrationInvite = () => {
                 <p><strong>Turnover Time (days):</strong> {formData.turnoverTime || 'N/A'}</p>
                 <p><strong>Description:</strong> {formData.description || 'N/A'}</p>
                 <p><strong>Agreed to Terms:</strong> {formData.agreeToTerms ? 'Yes' : 'No'}</p>
+                {uploadedDocs.length > 0 && (
+                  <div>
+                    <strong>Uploaded Documents:</strong>
+                    <ul>
+                      {uploadedDocs.map((doc, idx) => (
+                        <li key={idx}>{doc.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
 

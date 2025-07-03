@@ -83,6 +83,13 @@ const SupplierProfile = () => {
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imgOffsetStart, setImgOffsetStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     // Get supplier info from localStorage (from suppliers array)
@@ -222,22 +229,70 @@ const SupplierProfile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        const base64 = ev.target?.result as string;
-        if (editMode) {
-          setEditData((prev: any) => ({ ...prev, profilePicture: base64 }));
-        } else {
-          // Save directly if not in edit mode
-          const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-          const idx = suppliers.findIndex((s: any) => s.id === supplier.id);
-          if (idx !== -1) {
-            suppliers[idx] = { ...suppliers[idx], profilePicture: base64 };
-            localStorage.setItem("suppliers", JSON.stringify(suppliers));
-            setSupplier(suppliers[idx]);
-          }
-        }
+        setPreviewImg(ev.target?.result as string);
+        setShowPreview(true);
+        setZoom(1);
+        setOffset({ x: 0, y: 0 });
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handlePreviewSave = () => {
+    if (!previewImg) return;
+    // Render the current view to a canvas
+    const canvas = document.createElement('canvas');
+    const size = 256;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const img = new window.Image();
+    img.onload = () => {
+      // Center the image, apply zoom and offset
+      const scaledW = img.width * zoom;
+      const scaledH = img.height * zoom;
+      const x = (size - scaledW) / 2 + offset.x;
+      const y = (size - scaledH) / 2 + offset.y;
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(img, x, y, scaledW, scaledH);
+      const base64 = canvas.toDataURL('image/jpeg');
+      if (editMode) {
+        setEditData((prev: any) => ({ ...prev, profilePicture: base64 }));
+      } else {
+        const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+        const idx = suppliers.findIndex((s: any) => s.id === supplier.id);
+        if (idx !== -1) {
+          suppliers[idx] = { ...suppliers[idx], profilePicture: base64 };
+          localStorage.setItem("suppliers", JSON.stringify(suppliers));
+          setSupplier(suppliers[idx]);
+        }
+      }
+      setShowPreview(false);
+      setPreviewImg(null);
+    };
+    img.src = previewImg;
+  };
+
+  const handlePreviewCancel = () => {
+    setShowPreview(false);
+    setPreviewImg(null);
+  };
+
+  const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setZoom(Number(e.target.value));
+  };
+
+  const handlePreviewMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    setDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setImgOffsetStart({ ...offset });
+  };
+  const handlePreviewMouseUp = () => setDragging(false);
+  const handlePreviewMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    setOffset({ x: imgOffsetStart.x + dx, y: imgOffsetStart.y + dy });
   };
 
   return (
@@ -279,13 +334,13 @@ const SupplierProfile = () => {
           <div className="mt-2 text-sm text-gray-500">Registered: {regDate}</div>
         </div>
         <Card>
-          <CardHeader>
+        <CardHeader>
             <CardTitle className="dark:text-white">Profile Details</CardTitle>
             <CardDescription className="dark:text-gray-200">
               Welcome, {supplier.companyName || supplier.username}!
             </CardDescription>
-          </CardHeader>
-          <CardContent>
+        </CardHeader>
+        <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-4">
               <Button variant="outline" className="flex-1" onClick={handleDownloadCSV}>
                 <Download className="w-4 h-4 mr-2" /> Download as CSV
@@ -463,6 +518,82 @@ const SupplierProfile = () => {
             </Table>
           </CardContent>
         </Card>
+        {showPreview && previewImg && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white rounded-lg p-6 w-[90vw] max-w-md flex flex-col items-center">
+              <div className="mb-2 text-center text-gray-700 text-sm">
+                Drag to align, use the slider to zoom. The image will be saved as a circle.
+              </div>
+              <div className="flex gap-6 items-center">
+                {/* Main circular preview with grid overlay */}
+                <div
+                  className="relative w-64 h-64 bg-gray-200 overflow-hidden"
+                  style={{ borderRadius: '50%', userSelect: 'none', cursor: dragging ? 'grabbing' : 'grab' }}
+                  onMouseDown={handlePreviewMouseDown}
+                  onMouseUp={handlePreviewMouseUp}
+                  onMouseMove={handlePreviewMouseMove}
+                  onMouseLeave={handlePreviewMouseUp}
+                >
+                  <img
+                    src={previewImg}
+                    alt="Preview"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: `calc(50% + ${offset.x}px) calc(50% + ${offset.y}px)`,
+                      transform: `scale(${zoom})`,
+                      borderRadius: '50%',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  {/* Grid overlay */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{borderRadius: '50%'}}>
+                    <circle cx="50%" cy="50%" r="50%" fill="none" stroke="#e5e7eb" strokeWidth="2" />
+                    <line x1="0" y1="33.33%" x2="100%" y2="33.33%" stroke="#e5e7eb" strokeWidth="1" />
+                    <line x1="0" y1="66.66%" x2="100%" y2="66.66%" stroke="#e5e7eb" strokeWidth="1" />
+                    <line x1="33.33%" y1="0" x2="33.33%" y2="100%" stroke="#e5e7eb" strokeWidth="1" />
+                    <line x1="66.66%" y1="0" x2="66.66%" y2="100%" stroke="#e5e7eb" strokeWidth="1" />
+                  </svg>
+                </div>
+                {/* Live mini-preview */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden border-2 border-blue-400">
+                    <img
+                      src={previewImg}
+                      alt="Mini Preview"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: `calc(50% + ${offset.x}px) calc(50% + ${offset.y}px)`,
+                        transform: `scale(${zoom})`,
+                        borderRadius: '50%',
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500">Avatar Preview</span>
+                </div>
+              </div>
+              <div className="w-full flex flex-col items-center mt-4">
+                <label className="mb-1">Zoom</label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.01"
+                  value={zoom}
+                  onChange={handleZoomChange}
+                  className="w-48"
+                />
+              </div>
+              <div className="flex gap-4 mt-4">
+                <Button variant="outline" onClick={handlePreviewCancel}>Cancel</Button>
+                <Button onClick={handlePreviewSave}>Save</Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
