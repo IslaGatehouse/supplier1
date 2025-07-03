@@ -16,10 +16,43 @@ const SupplierCreateLogin = () => {
     localStorage.setItem("supplier-password", "test");
   }, []);
 
+  const validatePassword = (pwd: string) => {
+    // At least 8 chars, one uppercase, one lowercase, one number, one special char
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(pwd);
+  };
+
+  // Password requirement checks
+  const passwordChecks = [
+    {
+      label: "At least 8 characters",
+      met: password.length >= 8,
+    },
+    {
+      label: "One uppercase letter",
+      met: /[A-Z]/.test(password),
+    },
+    {
+      label: "One lowercase letter",
+      met: /[a-z]/.test(password),
+    },
+    {
+      label: "One number",
+      met: /\d/.test(password),
+    },
+    {
+      label: "One special character",
+      met: /[^A-Za-z\d]/.test(password),
+    },
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
       setError("Please enter both username and password.");
+      return;
+    }
+    if (!validatePassword(password)) {
+      setError("Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
       return;
     }
     setError("");
@@ -60,9 +93,26 @@ const SupplierCreateLogin = () => {
                 autoComplete="new-password"
                 placeholder="Choose a password"
               />
+              <ul className="mt-2 space-y-1 text-xs">
+                {passwordChecks.map((check, idx) => (
+                  <li key={idx} className="flex items-center">
+                    <span
+                      className={`inline-block w-4 h-4 mr-2 rounded-full border-2 ${check.met ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}
+                      aria-hidden="true"
+                    >
+                      {check.met && (
+                        <svg className="w-3 h-3 text-white mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className={check.met ? 'text-green-600' : 'text-gray-500'}>{check.label}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             {error && <p className="text-red-600 text-sm">{error}</p>}
-            <Button type="submit" className="w-full" disabled={!username || !password}>Create Login</Button>
+            <Button type="submit" className="w-full" disabled={!username || !password || !validatePassword(password)}>Create Login</Button>
           </form>
         </CardContent>
       </Card>

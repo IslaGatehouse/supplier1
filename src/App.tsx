@@ -18,6 +18,7 @@ import SupplierLogin from "./pages/SupplierLogin";
 import SupplierProfile from "./pages/SupplierProfile";
 import ConfirmationPageInvite from "./pages/ConfirmationPageInvite";
 import SupplierRegistrationInvite from "./pages/SupplierRegistrationInvite";
+import SupplierCreateLogin from "./pages/SupplierCreateLogin";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => {
             <Route path="/confirmation" element={<ConfirmationPage />} />
             <Route path="/confirmation-invite" element={<ConfirmationPageInvite />} />
             <Route path="/supplier-registration-invite" element={<SupplierRegistrationInvite />} />
+            <Route path="/supplier-create-login" element={<SupplierCreateLogin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

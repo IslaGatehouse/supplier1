@@ -29,7 +29,7 @@ const ConfirmationPageInvite = () => {
   }
 
   const getRiskColor = (category: string) => {
-    switch (category.toLowerCase()) {
+    switch (category?.toLowerCase()) {
       case "low": return "text-green-600 bg-green-50";
       case "medium": return "text-yellow-600 bg-yellow-50";
       case "high": return "text-red-600 bg-red-50";
@@ -38,7 +38,7 @@ const ConfirmationPageInvite = () => {
   };
 
   const getRiskIcon = (category: string) => {
-    switch (category.toLowerCase()) {
+    switch (category?.toLowerCase()) {
       case "low": return <CheckCircle className="h-8 w-8" />;
       case "medium": return <AlertTriangle className="h-8 w-8" />;
       case "high": return <Shield className="h-8 w-8" />;
@@ -47,7 +47,7 @@ const ConfirmationPageInvite = () => {
   };
 
   const getRiskMessage = (category: string, score: number) => {
-    switch (category.toLowerCase()) {
+    switch (category?.toLowerCase()) {
       case "low":
         return "Excellent! Your company has been classified as low risk. You can expect expedited processing of your application.";
       case "medium":
@@ -74,33 +74,94 @@ const ConfirmationPageInvite = () => {
           </p>
         </div>
 
-        {/* Details Card */}
-        <Card className="mb-8">
-          <CardHeader className="text-center">
-            <CardTitle>Registration Details</CardTitle>
-            <CardDescription>Here is a summary of your registration information.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          {/* Company Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                Company Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
               <div>
-                <strong>Company Name:</strong> {supplier.companyName}
-              </div>
-              <div>
-                <strong>Contact Person:</strong> {supplier.contactPerson}
-              </div>
-              <div>
-                <strong>Email:</strong> {supplier.email}
+                <p className="text-sm text-gray-600">Company Name</p>
+                <p className="font-medium">{supplier.companyName}</p>
               </div>
               <div>
-                <strong>Company House Number:</strong> {supplier.companyHouse || 'N/A'}
+                <p className="text-sm text-gray-600">Contact Person</p>
+                <p className="font-medium">{supplier.contactPerson}</p>
               </div>
-              <div className="md:col-span-2">
-                <strong>Company Address:</strong> {supplier.address}
+              <div>
+                <p className="text-sm text-gray-600">Email</p>
+                <p className="font-medium">{supplier.email}</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <div>
+                <p className="text-sm text-gray-600">Country</p>
+                <p className="font-medium">{supplier.country}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Industry</p>
+                <p className="font-medium">{supplier.industry}</p>
+              </div>
+              {supplier.certifications && supplier.certifications.length > 0 && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Certifications</p>
+                  <div className="flex flex-wrap gap-1">
+                    {supplier.certifications.map((cert: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {cert}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
+          {/* Risk Assessment */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="h-5 w-5 mr-2" />
+                Risk Assessment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center mb-4">
+                <div className={`inline-flex items-center justify-center p-4 rounded-full ${getRiskColor(supplier.riskCategory)}`}>
+                  {getRiskIcon(supplier.riskCategory)}
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-bold text-gray-900">{supplier.riskScore}/100</div>
+                  <Badge 
+                    className={`mt-2 ${getRiskColor(supplier.riskCategory)}`}
+                    variant="secondary"
+                  >
+                    {supplier.riskCategory} Risk
+                  </Badge>
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                <div
+                  className={`h-3 rounded-full ${
+                    supplier.riskScore >= 80
+                      ? "bg-green-500"
+                      : supplier.riskScore >= 60
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                  }`}
+                  style={{ width: `${supplier.riskScore}%` }}
+                />
+              </div>
+              <p className="text-sm text-gray-600 text-center">
+                {getRiskMessage(supplier.riskCategory, supplier.riskScore)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Action Buttons */}
         <div className="text-center">
           <Link to="/supplier-create-login">
             <Button size="lg">
