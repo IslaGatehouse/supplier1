@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import SupplierLogin from "./pages/SupplierLogin";
+import SupplierProfile from "./pages/SupplierProfile";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +62,7 @@ const App = () => {
             <Route path="/supplier-registration-join" element={<SupplierRegistration />} />
             <Route path="/supplier-registration" element={<SupplierRegistration />} />
             <Route path="/supplier-login" element={<SupplierLogin />} />
+            <Route path="/supplier-profile" element={<SupplierProfile />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
