@@ -25,7 +25,20 @@ const SupplierLogin = () => {
       return;
     }
     setError("");
-    // Redirect or show success (for now, just redirect to supplier profile)
+
+    // Find the supplier in the suppliers array and set email/companyName for profile linking
+    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    const found = suppliers.find((s: any) => s.username === username);
+    if (found) {
+      localStorage.setItem("supplier-email", found.email || "");
+      localStorage.setItem("supplier-companyName", found.companyName || "");
+      localStorage.setItem("supplier-username", found.username || "");
+    }
+
+    // Set loggedIn flag so profile page recognizes login
+    localStorage.setItem('loggedIn', 'true');
+
+    // Redirect to supplier profile
     navigate("/supplier-profile");
   };
 

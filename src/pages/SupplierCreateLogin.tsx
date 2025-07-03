@@ -67,6 +67,24 @@ const SupplierCreateLogin = () => {
     // Store credentials in localStorage (for demo only)
     localStorage.setItem("supplier-username", username);
     localStorage.setItem("supplier-password", password);
+
+    // Link login to supplier registration data
+    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    const email = localStorage.getItem("supplier-email");
+    const companyName = localStorage.getItem("supplier-companyName");
+    let updated = false;
+    for (let s of suppliers) {
+      if ((email && s.email === email) || (companyName && s.companyName === companyName)) {
+        s.username = username;
+        s.email = email || s.email;
+        updated = true;
+        break;
+      }
+    }
+    if (updated) {
+      localStorage.setItem("suppliers", JSON.stringify(suppliers));
+    }
+
     navigate("/supplier-login");
   };
 
