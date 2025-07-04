@@ -13,32 +13,21 @@ const SupplierLogin = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder: No real authentication
     if (!username || !password) {
       setError("Please enter both username and password.");
       return;
     }
-    const storedUsername = localStorage.getItem("supplier-username");
-    const storedPassword = localStorage.getItem("supplier-password");
-    if (username !== storedUsername || password !== storedPassword) {
+    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    const foundSupplier = suppliers.find((s: any) => s.username === username && s.password === password);
+    if (!foundSupplier) {
       setError("Invalid username or password.");
       return;
     }
     setError("");
-
-    // Find the supplier in the suppliers array and set email/companyName for profile linking
-    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-    const found = suppliers.find((s: any) => s.username === username);
-    if (found) {
-      localStorage.setItem("supplier-email", found.email || "");
-      localStorage.setItem("supplier-companyName", found.companyName || "");
-      localStorage.setItem("supplier-username", found.username || "");
-    }
-
-    // Set loggedIn flag so profile page recognizes login
+    localStorage.setItem("supplier-email", foundSupplier.email || "");
+    localStorage.setItem("supplier-companyName", foundSupplier.companyName || "");
+    localStorage.setItem("supplier-username", foundSupplier.username || "");
     localStorage.setItem('loggedIn', 'true');
-
-    // Redirect to supplier profile
     navigate("/supplier-profile");
   };
 

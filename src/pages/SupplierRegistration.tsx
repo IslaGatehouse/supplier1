@@ -172,9 +172,8 @@ const SupplierRegistration = () => {
     suppliers.push(newSupplier);
     localStorage.setItem("suppliers", JSON.stringify(suppliers));
 
-    // Store email and company name for login/profile linking
-    localStorage.setItem("supplier-email", newSupplier.email);
-    localStorage.setItem("supplier-companyName", newSupplier.companyName);
+    // Store the new supplier's id for login linking
+    localStorage.setItem("pending-supplier-id", newSupplier.id);
 
     toast({
       title: "Registration Submitted!",

@@ -64,25 +64,27 @@ const SupplierCreateLogin = () => {
       return;
     }
     setError("");
-    // Store credentials in localStorage (for demo only)
-    localStorage.setItem("supplier-username", username);
-    localStorage.setItem("supplier-password", password);
 
-    // Link login to supplier registration data
+    // Link login to supplier registration data using pending-supplier-id
     const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-    const email = localStorage.getItem("supplier-email");
-    const companyName = localStorage.getItem("supplier-companyName");
+    const pendingId = localStorage.getItem("pending-supplier-id");
+    // Prevent duplicate usernames across all suppliers
+    if (suppliers.some((s: any) => s.username === username)) {
+      setError("This username is already taken by another supplier.");
+      return;
+    }
     let updated = false;
     for (let s of suppliers) {
-      if ((email && s.email === email) || (companyName && s.companyName === companyName)) {
+      if (pendingId && s.id === pendingId) {
         s.username = username;
-        s.email = email || s.email;
+        s.password = password;
         updated = true;
         break;
       }
     }
     if (updated) {
       localStorage.setItem("suppliers", JSON.stringify(suppliers));
+      localStorage.removeItem("pending-supplier-id");
     }
 
     navigate("/supplier-login");

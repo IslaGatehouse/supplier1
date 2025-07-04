@@ -110,7 +110,7 @@ const SupplierProfile = () => {
     setSupplier(found);
   }, []);
 
-  if (!localStorage.getItem('loggedin')) {
+  if (!localStorage.getItem('loggedIn')) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md text-center">
@@ -167,7 +167,7 @@ const SupplierProfile = () => {
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem('loggedin');
+    localStorage.removeItem('loggedIn');
     navigate('/supplier-login');
   };
 

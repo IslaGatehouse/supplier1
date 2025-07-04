@@ -135,6 +135,8 @@ const SupplierRegistrationInvite = () => {
     const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
     suppliers.push(newSupplier);
     localStorage.setItem("suppliers", JSON.stringify(suppliers));
+    // Store the new supplier's id for login linking
+    localStorage.setItem("pending-supplier-id", newSupplier.id);
     toast({
       title: "Registration Submitted!",
       description: "Your supplier registration has been successfully submitted.",
