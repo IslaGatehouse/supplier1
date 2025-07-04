@@ -85,23 +85,23 @@ const SupplierRegistration = () => {
   };
 
   const handleNext = async () => {
-    let fieldsToValidate: (keyof SupplierRegistrationFormData)[] = [];
-    
+    let fieldsToValidate = [];
     if (currentStep === 1) {
-      fieldsToValidate = ["companyName", "email", "contactPerson", "phone", "address", "country", "industry", "otherIndustry"];
+      fieldsToValidate = [
+        "companyName",
+        "email",
+        "contactPerson",
+        "phone",
+        "address",
+        "country",
+        "industry",
+        "otherIndustry"
+      ];
     } else if (currentStep === 2) {
       fieldsToValidate = ["companySize", "yearsInBusiness", "turnoverTime"];
     }
-
     const isValid = await form.trigger(fieldsToValidate);
-    
     if (isValid && currentStep < totalSteps) {
-      if (currentStep === 1) {
-        const yib = form.getValues("yearsInBusiness");
-        if (yib && isNaN(Number(yib))) {
-          form.setValue("yearsInBusiness", "");
-        }
-      }
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -456,11 +456,11 @@ const SupplierRegistration = () => {
                         {...field}
                         id="years-in-business"
                         name="years-in-business"
-                        type="number"
+                        type="text"
                         placeholder="e.g., 5"
                         value={form.getValues('yearsInBusiness') || ""}
                         autoComplete="off"
-                        onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -476,11 +476,11 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Turnover Time (in days) *</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        type="number" 
+                      <Input
+                        {...field}
+                        type="text"
                         placeholder="e.g., 30"
-                        onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
