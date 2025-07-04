@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,9 +57,9 @@ const Index = () => {
           <Card className="hover:shadow-lg transition-shadow duration-300 h-full">
             <CardHeader className="text-center">
               <UserCog className="h-16 w-16 text-purple-600 mx-auto mb-4" />
-              <CardTitle className="text-2xl">Admin Access</CardTitle>
+              <CardTitle className="text-2xl">Admin and Company Access</CardTitle>
               <CardDescription className="text-lg">
-                View and manage all supplier registrations and risk assessments
+                Manage suppliers and view risk scores
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
