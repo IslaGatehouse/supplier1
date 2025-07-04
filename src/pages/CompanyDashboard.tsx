@@ -33,111 +33,7 @@ interface Supplier {
   description?: string;
 }
 
-const sampleSuppliers: Supplier[] = [
-  {
-    id: "1",
-    companyName: "Tech Solutions Inc",
-    email: "contact@techsolutions.com",
-    contactPerson: "John Smith",
-    country: "united-states",
-    industry: "technology",
-    riskScore: 85,
-    riskCategory: "Low",
-    submittedAt: "2024-01-15T10:30:00Z",
-    certifications: ["ISO 9001", "SOC 2"],
-    delayHistory: "excellent"
-  },
-  {
-    id: "2",
-    companyName: "Global Manufacturing Ltd",
-    email: "info@globalmanuf.com",
-    contactPerson: "Sarah Johnson",
-    country: "germany",
-    industry: "manufacturing",
-    riskScore: 72,
-    riskCategory: "Medium",
-    submittedAt: "2024-01-20T14:15:00Z",
-    certifications: ["ISO 9001", "ISO 14001"],
-    delayHistory: "good"
-  },
-  {
-    id: "3",
-    companyName: "Healthcare Supplies Co",
-    email: "orders@healthsupply.com",
-    contactPerson: "Dr. Michael Brown",
-    country: "canada",
-    industry: "healthcare",
-    riskScore: 91,
-    riskCategory: "Low",
-    submittedAt: "2024-01-25T09:45:00Z",
-    certifications: ["ISO 9001", "ISO 45001", "GDPR Compliant"],
-    delayHistory: "excellent"
-  },
-  {
-    id: "4",
-    companyName: "Quick Build Construction",
-    email: "contracts@quickbuild.com",
-    contactPerson: "Maria Garcia",
-    country: "spain",
-    industry: "construction",
-    riskScore: 58,
-    riskCategory: "High",
-    submittedAt: "2024-02-01T16:20:00Z",
-    certifications: ["ISO 45001"],
-    delayHistory: "frequent"
-  },
-  {
-    id: "5",
-    companyName: "Financial Services Group",
-    email: "partnerships@fingroup.com",
-    contactPerson: "David Lee",
-    country: "united-kingdom",
-    industry: "finance",
-    riskScore: 88,
-    riskCategory: "Low",
-    submittedAt: "2024-02-05T11:10:00Z",
-    certifications: ["SOC 2", "GDPR Compliant"],
-    delayHistory: "excellent"
-  },
-  {
-    id: "6",
-    companyName: "Retail Solutions Corp",
-    email: "vendor@retailsol.com",
-    contactPerson: "Lisa Wang",
-    country: "australia",
-    industry: "retail",
-    riskScore: 65,
-    riskCategory: "Medium",
-    submittedAt: "2024-02-10T13:30:00Z",
-    certifications: ["ISO 9001"],
-    delayHistory: "occasional"
-  }
-];
-
-const countries = [
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
-  "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
-  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
-  "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica",
-  "Croatia", "Cuba", "Cyprus", "Czech Republic", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador",
-  "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
-  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau",
-  "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland",
-  "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
-  "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
-  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
-  "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal",
-  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan",
-  "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania",
-  "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
-  "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea",
-  "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan",
-  "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
-  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela",
-  "Vietnam", "Yemen", "Zambia", "Zimbabwe"
-];
-
-const AdminDashboard = () => {
+const CompanyDashboard = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,15 +48,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     // Load suppliers from localStorage or use sample data
     const storedSuppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-    if (storedSuppliers.length === 0) {
-      // If no suppliers exist, add sample data
-      localStorage.setItem("suppliers", JSON.stringify(sampleSuppliers));
-      setSuppliers(sampleSuppliers);
-      setFilteredSuppliers(sampleSuppliers);
-    } else {
-      setSuppliers(storedSuppliers);
-      setFilteredSuppliers(storedSuppliers);
-    }
+    setSuppliers(storedSuppliers);
+    setFilteredSuppliers(storedSuppliers);
   }, []);
 
   useEffect(() => {
@@ -226,32 +115,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ["Company Name", "Contact Person", "Email", "Country", "Industry", "Risk Score", "Risk Category", "Submitted Date"];
-    const csvData = filteredSuppliers.map(supplier => [
-      supplier.companyName,
-      supplier.contactPerson,
-      supplier.email,
-      supplier.country,
-      supplier.industry,
-      supplier.riskScore,
-      supplier.riskCategory,
-      new Date(supplier.submittedAt).toLocaleDateString()
-    ]);
-
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(cell => `"${cell}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "suppliers.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   const stats = {
     total: suppliers.length,
     lowRisk: suppliers.filter(s => s.riskCategory === "Low").length,
@@ -260,15 +123,6 @@ const AdminDashboard = () => {
   };
 
   const uniqueCountries = [...new Set(suppliers.map(s => s.country))];
-
-  // List of all countries for the filter dropdown
-  const allCountries = [
-    "united-states", "germany", "canada", "spain", "united-kingdom", "australia",
-    "france", "italy", "japan", "china", "india", "brazil", "mexico", "south-africa", "russia", "netherlands", "sweden", "norway", "switzerland", "singapore"
-  ];
-  const filteredCountries = allCountries.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase()));
-
-  // Get unique industries and certifications for filter dropdowns
   const uniqueIndustries = [
     ...new Set(suppliers.map(s => s.industry).filter(Boolean))
   ];
@@ -280,25 +134,19 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <Link to="/">
+          <Link to="/admin-login">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
+              Back to Admin Login
             </Button>
           </Link>
-          
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-white">Admin Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-200">Manage and review supplier registrations</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-white">Company Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-200">View your company information and risk assessment</p>
             </div>
-            <Button onClick={exportToCSV} className="flex items-center">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
           </div>
         </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -326,7 +174,6 @@ const AdminDashboard = () => {
             </CardHeader>
           </Card>
         </div>
-
         {/* Filters */}
         <Card className="mb-8">
           <CardHeader>
@@ -382,7 +229,7 @@ const AdminDashboard = () => {
                     className="w-full justify-between"
                   >
                     {countryFilter !== "all"
-                      ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === countryFilter)
+                      ? uniqueCountries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === countryFilter)
                       : "All Countries"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -409,7 +256,7 @@ const AdminDashboard = () => {
                           />
                           All Countries
                         </CommandItem>
-                        {countries.map((country) => {
+                        {uniqueCountries.map((country) => {
                           const countryValue = country.toLowerCase().replace(/\s+/g, '-');
                           return (
                             <CommandItem
@@ -463,7 +310,6 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
         {/* Suppliers Table */}
         <Card>
           <CardHeader>
@@ -557,4 +403,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default CompanyDashboard; 
