@@ -161,26 +161,16 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     // Load suppliers from localStorage or use sample data
-    const loadSuppliers = () => {
-      const storedSuppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
-      if (storedSuppliers.length === 0) {
-        localStorage.setItem("suppliers", JSON.stringify(sampleSuppliers));
-        setSuppliers(sampleSuppliers);
-        setFilteredSuppliers(sampleSuppliers);
-      } else {
-        setSuppliers(storedSuppliers);
-        setFilteredSuppliers(storedSuppliers);
-      }
-    };
-    loadSuppliers();
-    // Listen for localStorage changes (e.g., from registration in another tab)
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "suppliers") {
-        loadSuppliers();
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    const storedSuppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    if (storedSuppliers.length === 0) {
+      // If no suppliers exist, add sample data
+      localStorage.setItem("suppliers", JSON.stringify(sampleSuppliers));
+      setSuppliers(sampleSuppliers);
+      setFilteredSuppliers(sampleSuppliers);
+    } else {
+      setSuppliers(storedSuppliers);
+      setFilteredSuppliers(storedSuppliers);
+    }
   }, []);
 
   useEffect(() => {
@@ -533,7 +523,7 @@ const AdminDashboard = () => {
                               <Button size="sm" onClick={async () => {
                                 const link = `${window.location.origin}/supplier-create-login`;
                                 try {
-                                  const res = await fetch("http://127.0.0.1:8000/send-invite-email", {
+                                  const res = await fetch("http://localhost:8000/send-invite-email", {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ email: supplier.email, link }),

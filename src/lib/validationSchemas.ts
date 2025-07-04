@@ -18,22 +18,8 @@ export const supplierRegistrationSchema = z.object({
   certifications: z.array(z.string()).optional(),
   otherCertification: z.string().optional(),
   companySize: z.string().min(1, "Please select company size"),
-  yearsInBusiness: z
-    .string()
-    .min(1, "Years in business is required")
-    .regex(/^\d+$/, "Only numerical values are allowed")
-    .refine(val => {
-      const num = Number(val);
-      return Number.isInteger(num) && num > 0;
-    }, "Enter a valid number of years (must be greater than 0)"),
-  turnoverTime: z
-    .string()
-    .min(1, "Turnover time is required")
-    .regex(/^\d+$/, "Only numerical values are allowed")
-    .refine(val => {
-      const num = Number(val);
-      return Number.isInteger(num) && num > 0;
-    }, "Enter a valid turnover time in days (must be greater than 0)"),
+  yearsInBusiness: z.string().min(1, "Years in business is required").regex(/^\d+$/, "Only numerical values are allowed"),
+  turnoverTime: z.string().min(1, "Turnover time is required").regex(/^\d+$/, "Only numerical values are allowed"),
   description: z.string().optional(),
   agreeToTerms: z.boolean().refine(val => val === true, "You must agree to the terms and conditions")
 });
