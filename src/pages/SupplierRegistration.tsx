@@ -480,6 +480,7 @@ const SupplierRegistration = () => {
                         {...field}
                         type="text"
                         placeholder="e.g., 30"
+                        value={form.getValues('turnoverTime') || ""}
                         onChange={field.onChange}
                       />
                     </FormControl>
