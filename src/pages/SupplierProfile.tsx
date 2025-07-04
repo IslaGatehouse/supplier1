@@ -91,6 +91,7 @@ const SupplierProfile = () => {
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imgOffsetStart, setImgOffsetStart] = useState({ x: 0, y: 0 });
+  const [countrySearch, setCountrySearch] = useState("");
 
   // Validation functions
   const validateField = (key: string, value: any) => {
@@ -505,12 +506,20 @@ const SupplierProfile = () => {
                         <TableRow key={key}>
                           <TableCell className="font-medium">Country</TableCell>
                           <TableCell>
+                            <div className="mb-2">
+                              <Input
+                                placeholder="Search country..."
+                                value={countrySearch}
+                                onChange={e => setCountrySearch(e.target.value)}
+                                className="mb-2"
+                              />
+                            </div>
                             <Select value={editData.country} onValueChange={val => handleEditChange("country", val)}>
                               <SelectTrigger className={validationErrors.country ? "border-red-500" : ""}>
                                 <SelectValue placeholder="Select country" />
                               </SelectTrigger>
                               <SelectContent>
-                                {countries.map(c => (
+                                {countries.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map(c => (
                                   <SelectItem key={c} value={c}>{c}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -628,6 +637,26 @@ const SupplierProfile = () => {
                               placeholder="Brief description of your company and services..."
                               rows={3}
                             />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+                    if (key === "agreeToTerms") {
+                      return (
+                        <TableRow key={key}>
+                          <TableCell className="font-medium">Agree to Terms</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="agreeToTerms"
+                                checked={!!editData.agreeToTerms}
+                                onCheckedChange={checked => handleEditChange("agreeToTerms", checked === true)}
+                              />
+                              <Label htmlFor="agreeToTerms">I agree to the terms and conditions</Label>
+                            </div>
+                            {validationErrors.agreeToTerms && (
+                              <p className="text-sm text-red-600 mt-1">{validationErrors.agreeToTerms}</p>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
