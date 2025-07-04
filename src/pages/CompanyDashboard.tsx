@@ -332,7 +332,7 @@ const CompanyDashboard = () => {
               setInviteLoading(true);
               const link = `${window.location.origin}/supplier-create-login`;
               try {
-                const res = await fetch("http://localhost:8000/send-invite-email", {
+                const res = await fetch("http://127.0.0.1:8000/send-invite-email", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: inviteEmail, link }),
@@ -402,7 +402,7 @@ const CompanyDashboard = () => {
                               <Button size="sm" onClick={async () => {
                                 const link = `${window.location.origin}/supplier-create-login`;
                                 try {
-                                  const res = await fetch("http://localhost:8000/send-invite-email", {
+                                  const res = await fetch("http://127.0.0.1:8000/send-invite-email", {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ email: supplier.email, link }),
