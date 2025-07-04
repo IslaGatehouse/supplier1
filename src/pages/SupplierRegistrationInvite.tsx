@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -139,12 +140,27 @@ const SupplierRegistrationInvite = () => {
       if (riskScore < 70) riskCategory = "high";
       else if (riskScore < 85) riskCategory = "medium";
 
+      // Map form data to database schema (camelCase to snake_case)
       const supplierData = {
-        ...data,
         id: uuidv4(),
-        riskScore,
-        riskCategory,
-        createdAt: new Date().toISOString(),
+        user_id: uuidv4(), // This should be replaced with actual user ID when auth is implemented
+        company_name: data.companyName,
+        email: data.email,
+        contact_person: data.contactPerson,
+        company_house: data.companyHouse || null,
+        address: data.address,
+        phone: data.phone || null,
+        industry: data.industry,
+        country: data.country,
+        other_industry: data.otherIndustryText || null,
+        certifications: data.certifications || [],
+        other_certification: data.otherCertification || null,
+        company_size: data.companySize || "Not specified",
+        years_in_business: parseInt(data.yearsInBusiness || "0"),
+        turnover_time: parseInt(data.turnoverTime || "0"),
+        description: data.description || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase.from("supplier_profiles").insert(supplierData);
@@ -154,7 +170,15 @@ const SupplierRegistrationInvite = () => {
         toast.error("Failed to save data. Please try again.");
       } else {
         toast.success("Registration successful!");
-        navigate("/confirmation-invite", { state: { supplier: supplierData } });
+        // Pass the original form data for the confirmation page
+        const confirmationData = {
+          ...data,
+          id: supplierData.id,
+          riskScore,
+          riskCategory,
+          createdAt: supplierData.created_at,
+        };
+        navigate("/confirmation-invite", { state: { supplier: confirmationData } });
       }
     } catch (error) {
       console.error("Error submitting form:", error);
