@@ -10,6 +10,7 @@ import { ArrowLeft, Search, Download, Shield, AlertTriangle, CheckCircle, Chevro
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Supplier {
   id: string;
@@ -31,6 +32,7 @@ interface Supplier {
   yearsInBusiness?: string;
   turnoverTime?: string;
   description?: string;
+  registrationType?: string;
 }
 
 const sampleSuppliers: Supplier[] = [
@@ -45,7 +47,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Low",
     submittedAt: "2024-01-15T10:30:00Z",
     certifications: ["ISO 9001", "SOC 2"],
-    delayHistory: "excellent"
+    delayHistory: "excellent",
+    registrationType: 'self'
   },
   {
     id: "2",
@@ -58,7 +61,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Medium",
     submittedAt: "2024-01-20T14:15:00Z",
     certifications: ["ISO 9001", "ISO 14001"],
-    delayHistory: "good"
+    delayHistory: "good",
+    registrationType: 'self'
   },
   {
     id: "3",
@@ -71,7 +75,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Low",
     submittedAt: "2024-01-25T09:45:00Z",
     certifications: ["ISO 9001", "ISO 45001", "GDPR Compliant"],
-    delayHistory: "excellent"
+    delayHistory: "excellent",
+    registrationType: 'self'
   },
   {
     id: "4",
@@ -84,7 +89,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "High",
     submittedAt: "2024-02-01T16:20:00Z",
     certifications: ["ISO 45001"],
-    delayHistory: "frequent"
+    delayHistory: "frequent",
+    registrationType: 'self'
   },
   {
     id: "5",
@@ -97,7 +103,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Low",
     submittedAt: "2024-02-05T11:10:00Z",
     certifications: ["SOC 2", "GDPR Compliant"],
-    delayHistory: "excellent"
+    delayHistory: "excellent",
+    registrationType: 'self'
   },
   {
     id: "6",
@@ -110,7 +117,8 @@ const sampleSuppliers: Supplier[] = [
     riskCategory: "Medium",
     submittedAt: "2024-02-10T13:30:00Z",
     certifications: ["ISO 9001"],
-    delayHistory: "occasional"
+    delayHistory: "occasional",
+    registrationType: 'self'
   }
 ];
 
@@ -148,6 +156,8 @@ const AdminDashboard = () => {
   const [industryFilter, setIndustryFilter] = useState("all");
   const [certificationFilter, setCertificationFilter] = useState("all");
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Load suppliers from localStorage or use sample data
@@ -480,7 +490,9 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Action</TableHead>
                       <TableHead>Company</TableHead>
+                      <TableHead>Registration Type</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
@@ -498,12 +510,47 @@ const AdminDashboard = () => {
                       <TableHead>Risk Level</TableHead>
                       <TableHead>Submitted</TableHead>
                     </TableRow>
+                    
                   </TableHeader>
                   <TableBody>
                     {filteredSuppliers.map((supplier) => (
                       <TableRow key={supplier.id}>
                         <TableCell>
+                          {supplier.registrationType === 'self' ? (
+                            pendingIds.includes(supplier.id) ? (
+                              <Badge className="bg-amber-100 text-amber-800 border-amber-200 py-1 px-3 text-sm rounded-md">Pending</Badge>
+                            ) : (
+                              <Button size="sm" onClick={async () => {
+                                const link = `${window.location.origin}/supplier-create-login`;
+                                try {
+                                  const res = await fetch("http://localhost:8000/send-invite-email", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ email: supplier.email, link }),
+                                  });
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    setPendingIds(prev => [...prev, supplier.id]);
+                                    toast({ title: "Email sent!", description: `Invite sent to ${supplier.email}` });
+                                  } else {
+                                    toast({ title: "Error", description: data.error || "Failed to send email", variant: "destructive" });
+                                  }
+                                } catch (err) {
+                                  toast({ title: "Error", description: "Failed to send email", variant: "destructive" });
+                                }
+                              }}>
+                                Accept
+                              </Button>
+                            )
+                          ) : (
+                            <Badge className="bg-green-100 text-green-800 border-green-200 py-1 px-3 text-sm rounded-md">Join</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <div className="font-medium">{supplier.companyName}</div>
+                        </TableCell>
+                        <TableCell>
+                          {supplier.registrationType === 'self' ? 'Self' : supplier.registrationType === 'invite' ? 'Invited' : 'Unknown'}
                         </TableCell>
                         <TableCell>{supplier.contactPerson}</TableCell>
                         <TableCell>{supplier.email}</TableCell>

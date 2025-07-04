@@ -17,17 +17,13 @@ const AdminLogin = () => {
       setError("Please enter both username and password.");
       return;
     }
-    if (username === "company" && password === "company") {
-      setError("");
-      navigate("/company-dashboard");
+    if (username !== "test" || password !== "test") {
+      setError("Invalid username or password.");
       return;
     }
-    if (username === "test" && password === "test") {
-      setError("");
-      navigate("/admin");
-      return;
-    }
-    setError("Invalid username or password.");
+    setError("");
+    // Redirect or show success (for now, just redirect to admin dashboard)
+    navigate("/admin");
   };
 
   return (
