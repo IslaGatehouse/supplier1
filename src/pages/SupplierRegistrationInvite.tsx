@@ -1,75 +1,57 @@
-
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Building2, ChevronsUpDown, Check, Upload } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supplierInviteSchema, type SupplierInviteFormData } from "@/lib/validationSchemas";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
-import { supplierInviteSchema, type SupplierInviteFormData } from "@/lib/validationSchemas";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 
-const industries = [
-  "Agriculture",
-  "Manufacturing",
-  "Technology",
-  "Healthcare",
-  "Finance",
-  "Education",
-  "Retail",
-  "Energy",
-  "Construction",
-  "Transportation",
-  "Other",
-];
-
-const certifications = [
-  "ISO 9001",
-  "ISO 14001",
-  "OHSAS 18001",
-  "GMP",
-  "HACCP",
-  "CE",
-  "UL",
-  "RoHS",
-  "REACH",
-  "Other",
-];
-
-const countriesList = [
-  "United States",
-  "Canada",
-  "United Kingdom",
-  "Germany",
-  "France",
-  "Japan",
-  "China",
-  "India",
-  "Brazil",
-  "Australia",
+const countries = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
+  "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
+  "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica",
+  "Croatia", "Cuba", "Cyprus", "Czech Republic", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador",
+  "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
+  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau",
+  "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland",
+  "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
+  "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
+  "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal",
+  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan",
+  "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania",
+  "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
+  "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea",
+  "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan",
+  "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela",
+  "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
 const SupplierRegistrationInvite = () => {
   const navigate = useNavigate();
-  const [otherIndustrySelected, setOtherIndustrySelected] = useState(false);
-  const [otherCertificationSelected, setOtherCertificationSelected] = useState(false);
-  const [selectedCertifications, setSelectedCertifications] = useState<string[]>([]);
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
+  const progressPercentage = (currentStep / totalSteps) * 100;
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [uploadedDocs, setUploadedDocs] = useState<{name: string, data: string}[]>([]);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<SupplierInviteFormData>({
+  const form = useForm<SupplierInviteFormData>({
     resolver: zodResolver(supplierInviteSchema),
     defaultValues: {
       companyName: "",
@@ -81,290 +63,561 @@ const SupplierRegistrationInvite = () => {
       industry: "",
       country: "",
       otherIndustry: "",
-      otherIndustryText: "",
       certifications: [],
       otherCertification: "",
       companySize: "",
       yearsInBusiness: "",
       turnoverTime: "",
       description: "",
-      agreeToTerms: false,
-    },
+      agreeToTerms: false
+    }
   });
 
-  const watchIndustry = watch("industry"); // Watch the 'industry' field
-
-  React.useEffect(() => {
-    if (watchIndustry === "Other") {
-      setOtherIndustrySelected(true);
-    } else {
-      setOtherIndustrySelected(false);
-      setValue("otherIndustryText", "");
+  const handleNext = async () => {
+    const isValid = await form.trigger();
+    if (isValid && currentStep < totalSteps) {
+      setCurrentStep(prev => prev + 1);
     }
-  }, [watchIndustry, setValue]);
+  };
 
-  const handleCertificationChange = (certification: string) => {
-    setSelectedCertifications((prev) => {
-      if (prev.includes(certification)) {
-        return prev.filter((c) => c !== certification);
-      } else {
-        return [...prev, certification];
-      }
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const calculateRiskScore = (data: any) => {
+    let score = 100;
+    const years = parseInt(data.yearsInBusiness);
+    if (years < 2) score -= 20;
+    else if (years < 5) score -= 10;
+    else if (years > 20) score += 5;
+    const certCount = Math.min(data.certifications?.length || 0, 5);
+    score += certCount * 5;
+    if (data.companySize === "large") score += 10;
+    else if (data.companySize === "medium") score += 5;
+    else if (data.companySize === "small") score -= 5;
+    if (data.industry === "construction") score -= 10;
+    else if (data.industry === "healthcare") score += 5;
+    if (["united-states", "germany", "japan", "switzerland"].includes(data.country)) score += 5;
+    return Math.max(0, Math.min(100, score));
+  };
+
+  const getRiskCategory = (score: number) => {
+    if (score >= 80) return "Low";
+    if (score >= 60) return "Medium";
+    return "High";
+  };
+
+  const onSubmit = (data: SupplierInviteFormData) => {
+    const riskScore = calculateRiskScore(data);
+    const riskCategory = getRiskCategory(riskScore);
+    let certifications = data.certifications || [];
+    if (certifications.includes("Other") && data.otherCertification?.trim()) {
+      certifications = certifications.filter(c => c !== "Other");
+      certifications = [...certifications, ...data.otherCertification.split(",").map(c => c.trim()).filter(Boolean)];
+    }
+    const industry = data.industry === "other" && data.otherIndustry?.trim()
+      ? data.otherIndustry.trim()
+      : data.industry;
+    const newSupplier = {
+      ...data,
+      certifications,
+      industry,
+      id: Date.now().toString(),
+      riskScore,
+      riskCategory,
+      submittedAt: new Date().toISOString(),
+      registrationType: 'invite',
+      documents: uploadedDocs,
+    };
+    // Add to localStorage for admin dashboard
+    const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
+    suppliers.push(newSupplier);
+    localStorage.setItem("suppliers", JSON.stringify(suppliers));
+    toast({
+      title: "Registration Submitted!",
+      description: "Your supplier registration has been successfully submitted.",
     });
-    setValue(
-      "certifications",
-      selectedCertifications.includes(certification)
-        ? selectedCertifications.filter((c) => c !== certification)
-        : [...selectedCertifications, certification]
-    );
+    navigate("/confirmation-invite", { state: { supplier: newSupplier } });
   };
 
-  const watchCertifications = watch("certifications");
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+  return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company Name *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Email Address *</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="contactPerson"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Contact Person *</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="companyHouse"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company House Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="e.g., 12345678" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company Address *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter company address" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Phone Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Country *</FormLabel>
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between"
+                          >
+                            {field.value
+                              ? countries.find((country) => country.toLowerCase().replace(/\s+/g, '-') === field.value)
+                              : "Select country..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search country..." />
+                          <CommandList>
+                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandGroup>
+                              {countries.map((country) => (
+                                <CommandItem
+                                  key={country}
+                                  value={country}
+                                  onSelect={() => {
+                                    const countryValue = country.toLowerCase().replace(/\s+/g, '-');
+                                    field.onChange(countryValue);
+                                    setCountryOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === country.toLowerCase().replace(/\s+/g, '-') ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {country}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex-1">
+                <FormField
+                  control={form.control}
+                  name="industry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-white">Industry *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select industry" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                          <SelectItem value="technology">Technology</SelectItem>
+                          <SelectItem value="healthcare">Healthcare</SelectItem>
+                          <SelectItem value="finance">Finance</SelectItem>
+                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="construction">Construction</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch("industry") === "other" && (
+                  <div className="mt-2">
+                    <FormField
+                      control={form.control}
+                      name="otherIndustryText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter your industry" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case 2:
+        const certifications = form.watch("certifications") || [];
+        const isOtherChecked = certifications.includes("Other");
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label className="text-base font-medium dark:text-white">Certifications</Label>
+              <div className="mt-2 space-y-2">
+                {[
+                  "ISO 9001", "ISO 14001", "ISO 45001", "SOC 2", "GDPR Compliant", "Other"
+                ].map((cert) => (
+                  <div key={cert} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={cert}
+                      checked={!!certifications.includes(cert)}
+                      onCheckedChange={(checked) => {
+                        const isChecked = checked === true;
+                        const currentCertifications = form.getValues("certifications") || [];
+                        if (isChecked) {
+                          form.setValue("certifications", [...currentCertifications, cert]);
+                        } else {
+                          form.setValue("certifications", currentCertifications.filter(c => c !== cert));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={cert} className="dark:text-white">{cert}</Label>
+                  </div>
+                ))}
+                {isOtherChecked && (
+                  <div className="mt-2">
+                    <FormField
+                      control={form.control}
+                      name="otherCertification"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} placeholder="Please specify other certification(s)" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
 
-  React.useEffect(() => {
-    if (watchCertifications && watchCertifications.includes("Other")) {
-      setOtherCertificationSelected(true);
-    } else {
-      setOtherCertificationSelected(false);
-      setValue("otherCertification", "");
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="companySize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Company Size *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select company size" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="small">Small (1-50 employees)</SelectItem>
+                        <SelectItem value="medium">Medium (51-200 employees)</SelectItem>
+                        <SelectItem value="large">Large (200+ employees)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="yearsInBusiness"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Years in Business *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="number" 
+                        placeholder="e.g., 5"
+                        value={form.getValues('yearsInBusiness') || ''}
+                        onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="turnoverTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-white">Turnover Time (in days) *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="number" 
+                        placeholder="e.g., 30"
+                        onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="dark:text-white">Company Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Brief description of your company and services..."
+                      rows={4}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+      case 3:
+        const formData = form.getValues();
+        return (
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="fileUpload" className="dark:text-white">Upload Documents</Label>
+              <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Upload company certificates, licenses, or other relevant documents</p>
+                <Input id="fileUpload" type="file" multiple className="hidden" onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  const newDocs = await Promise.all(files.map(file => {
+                    return new Promise<{name: string, data: string}>((resolve) => {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => resolve({ name: file.name, data: ev.target?.result as string });
+                      reader.readAsDataURL(file);
+                    });
+                  }));
+                  setUploadedDocs(prev => [...prev, ...newDocs]);
+                }} />
+                <Button type="button" variant="outline" onClick={() => document.getElementById('fileUpload')?.click()}>
+                  Choose Files
+                </Button>
+                {uploadedDocs.length > 0 && (
+                  <div className="mt-4 text-left">
+                    <div className="font-medium mb-1">Selected Files:</div>
+                    <ul className="text-sm text-gray-700">
+                      {uploadedDocs.map((doc, idx) => (
+                        <li key={idx}>{doc.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-medium text-blue-900 mb-2 dark:text-black">Review Your Information</h3>
+              <div className="space-y-1 text-sm text-blue-800">
+                <p><strong>Company:</strong> {formData.companyName}</p>
+                <p><strong>Contact:</strong> {formData.contactPerson}</p>
+                <p><strong>Email:</strong> {formData.email}</p>
+                <p><strong>Phone:</strong> {formData.phone || 'N/A'}</p>
+                <p><strong>Company House Number:</strong> {formData.companyHouse || 'N/A'}</p>
+                <p><strong>Address:</strong> {formData.address || 'N/A'}</p>
+                <p><strong>Country:</strong> {formData.country}</p>
+                <p><strong>Industry:</strong> {formData.industry}</p>
+                {formData.industry === 'other' && formData.otherIndustry && (
+                  <p><strong>Other Industry:</strong> {formData.otherIndustry}</p>
+                )}
+                <p><strong>Certifications:</strong> {formData.certifications?.join(', ') || 'None'}</p>
+                {formData.certifications?.includes('Other') && formData.otherCertification && (
+                  <p><strong>Other Certification(s):</strong> {formData.otherCertification}</p>
+                )}
+                <p><strong>Company Size:</strong> {formData.companySize || 'N/A'}</p>
+                <p><strong>Years in Business:</strong> {formData.yearsInBusiness || 'N/A'}</p>
+                <p><strong>Turnover Time (days):</strong> {formData.turnoverTime || 'N/A'}</p>
+                <p><strong>Description:</strong> {formData.description || 'N/A'}</p>
+                <p><strong>Agreed to Terms:</strong> {formData.agreeToTerms ? 'Yes' : 'No'}</p>
+                {uploadedDocs.length > 0 && (
+                  <div>
+                    <strong>Uploaded Documents:</strong>
+                    <ul>
+                      {uploadedDocs.map((doc, idx) => (
+                        <li key={idx}>{doc.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="agreeToTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-sm dark:text-gray-200">
+                      I agree to the terms and conditions and privacy policy *
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
+        );
     }
-  }, [watchCertifications, setValue]);
-
-  const onSubmit = async (data: SupplierInviteFormData) => {
-    try {
-      console.log("Form submitted with data:", data);
-
-      // Generate risk assessment
-      const riskScore = Math.floor(Math.random() * 41) + 60; // Random score between 60-100
-      let riskCategory = "low";
-      if (riskScore < 70) riskCategory = "high";
-      else if (riskScore < 85) riskCategory = "medium";
-
-      // Map form data to database schema (camelCase to snake_case)
-      const supplierData = {
-        id: uuidv4(),
-        user_id: uuidv4(), // This should be replaced with actual user ID when auth is implemented
-        company_name: data.companyName,
-        email: data.email,
-        contact_person: data.contactPerson,
-        company_house: data.companyHouse || null,
-        address: data.address,
-        phone: data.phone || null,
-        industry: data.industry,
-        country: data.country,
-        other_industry: data.otherIndustryText || null,
-        certifications: data.certifications || [],
-        other_certification: data.otherCertification || null,
-        company_size: data.companySize || "Not specified",
-        years_in_business: parseInt(data.yearsInBusiness || "0"),
-        turnover_time: parseInt(data.turnoverTime || "0"),
-        description: data.description || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from("supplier_profiles").insert(supplierData);
-
-      if (error) {
-        console.error("Supabase error:", error);
-        toast.error("Failed to save data. Please try again.");
-      } else {
-        toast.success("Registration successful!");
-        // Pass the original form data for the confirmation page
-        const confirmationData = {
-          ...data,
-          id: supplierData.id,
-          riskScore,
-          riskCategory,
-          createdAt: supplierData.created_at,
-        };
-        navigate("/confirmation-invite", { state: { supplier: confirmationData } });
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast.error("An error occurred while submitting the form. Please try again.");
-    }
-  };
-
-  const handleRemoveCertification = (certificationToRemove: string) => {
-    setSelectedCertifications((prev) => prev.filter((cert) => cert !== certificationToRemove));
-    setValue(
-      "certifications",
-      selectedCertifications.filter((cert) => cert !== certificationToRemove)
-    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <Card className="bg-white shadow-md rounded-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Supplier Registration</CardTitle>
-            <CardDescription>Fill in the information to register as a supplier.</CardDescription>
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="mb-8">
+          <Button variant="ghost" onClick={() => navigate("/start-registration") } className="mb-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div className="flex items-center mb-4">
+            <Building2 className="h-8 w-8 text-blue-600 mr-3" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Supplier Registration Invite</h1>
+          </div>
+          <Progress value={progressPercentage} className="mb-4" />
+          <p className="text-gray-600 dark:text-gray-200">Step {currentStep} of {totalSteps}</p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="dark:text-white">
+              {currentStep === 1 && "Company Information"}
+              {currentStep === 2 && "Business Details"}
+              {currentStep === 3 && "Review & Submit"}
+            </CardTitle>
+            <CardDescription className="dark:text-gray-200">
+              {currentStep === 1 && "Tell us about your company"}
+              {currentStep === 2 && "Share your business credentials and history (optional for invite)"}
+              {currentStep === 3 && "Review your submission before continuing"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input id="companyName" type="text" {...register("companyName")} />
-                {errors.companyName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.companyName.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" {...register("email")} />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="contactPerson">Contact Person</Label>
-                <Input id="contactPerson" type="text" {...register("contactPerson")} />
-                {errors.contactPerson && (
-                  <p className="text-red-500 text-sm mt-1">{errors.contactPerson.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone (optional)</Label>
-                <Input id="phone" type="tel" {...register("phone")} />
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="companyHouse">Company House Registration Number (optional)</Label>
-                <Input id="companyHouse" type="text" {...register("companyHouse")} />
-                {errors.companyHouse && (
-                  <p className="text-red-500 text-sm mt-1">{errors.companyHouse.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" type="text" {...register("address")} />
-                {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="country">Country</Label>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countriesList.map((country) => (
-                      <SelectItem key={country} value={country} onClick={() => setValue("country", country)}>
-                        {country}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="industry">Industry</Label>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select an industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {industries.map((industry) => (
-                      <SelectItem key={industry} value={industry} onClick={() => setValue("industry", industry)}>
-                        {industry}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.industry && <p className="text-red-500 text-sm mt-1">{errors.industry.message}</p>}
-              </div>
-
-              {otherIndustrySelected && (
-                <div>
-                  <Label htmlFor="otherIndustryText">Other Industry, please specify</Label>
-                  <Input id="otherIndustryText" type="text" {...register("otherIndustryText")} />
-                </div>
-              )}
-
-              <div>
-                <Label>Certifications</Label>
-                <div className="flex flex-wrap gap-2">
-                  {certifications.map((certification) => (
-                    <div key={certification} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`certification-${certification}`}
-                        checked={selectedCertifications.includes(certification)}
-                        onCheckedChange={() => handleCertificationChange(certification)}
-                      />
-                      <Label htmlFor={`certification-${certification}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        {certification}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-                {errors.certifications && (
-                  <p className="text-red-500 text-sm mt-1">{errors.certifications.message}</p>
-                )}
-              </div>
-
-              {selectedCertifications.length > 0 && (
-                <div>
-                  <p className="text-sm text-gray-500">Selected Certifications:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCertifications.map((certification) => (
-                      <Badge key={certification} variant="secondary">
-                        {certification}
-                        {certification !== "Other" && (
-                          <X
-                            className="h-3 w-3 ml-1 cursor-pointer"
-                            onClick={() => handleRemoveCertification(certification)}
-                          />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="companySize">Company Size</Label>
-                <Input id="companySize" type="text" {...register("companySize")} />
-                {errors.companySize && (
-                  <p className="text-red-500 text-sm mt-1">{errors.companySize.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="yearsInBusiness">Years in Business</Label>
-                <Input id="yearsInBusiness" type="text" {...register("yearsInBusiness")} />
-                {errors.yearsInBusiness && (
-                  <p className="text-red-500 text-sm mt-1">{errors.yearsInBusiness.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="turnoverTime">Annual Turnover (USD)</Label>
-                <Input id="turnoverTime" type="text" {...register("turnoverTime")} />
-                {errors.turnoverTime && (
-                  <p className="text-red-500 text-sm mt-1">{errors.turnoverTime.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="description">Company Description (optional)</Label>
-                <Textarea id="description" {...register("description")} />
-              </div>
-
-              <div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="terms" {...register("agreeToTerms")} />
-                  <Label htmlFor="terms">I agree to the terms and conditions</Label>
-                </div>
-                {errors.agreeToTerms && (
-                  <p className="text-red-500 text-sm mt-1">{errors.agreeToTerms.message}</p>
-                )}
-              </div>
-
-              <Button type="submit" className="w-full">
-                Register
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                {renderStep()}
+                <div className="flex justify-between mt-8">
+                  <Button
+                    type="button"
+                    onClick={handlePrevious}
+                    disabled={currentStep === 1}
+                  >
+                    Previous
+                  </Button>
+                  {currentStep < totalSteps ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button type="submit" disabled={!form.watch("agreeToTerms") || !form.formState.isValid}>
+                      Submit Registration
               </Button>
+                  )}
+                </div>
             </form>
-          </CardContent>
-        </Card>
+          </Form>
+        </CardContent>
+      </Card>
       </div>
     </div>
   );
