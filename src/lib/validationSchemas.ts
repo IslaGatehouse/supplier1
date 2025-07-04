@@ -41,9 +41,9 @@ export const supplierInviteSchema = z.object({
   otherIndustryText: z.string().optional(),
   certifications: z.array(z.string()).optional(),
   otherCertification: z.string().optional(),
-  companySize: z.string().optional(),
-  yearsInBusiness: z.string().optional(),
-  turnoverTime: z.string().optional(),
+  companySize: z.string().min(1, "Please select company size"),
+  yearsInBusiness: z.string().min(1, "Years in business is required").regex(/^\d+$/, "Only numerical values are allowed"),
+  turnoverTime: z.string().min(1, "Turnover time is required").regex(/^\d+$/, "Only numerical values are allowed"),
   description: z.string().optional(),
   agreeToTerms: z.boolean().optional(),
 });

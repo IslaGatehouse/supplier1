@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,6 @@ const SupplierCreateLogin = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-
-  useEffect(() => {
-    // Auto-create the test login on mount
-    localStorage.setItem("supplier-username", "test");
-    localStorage.setItem("supplier-password", "test");
-  }, []);
 
   const validatePassword = (pwd: string) => {
     // At least 8 chars, one uppercase, one lowercase, one number, one special char
@@ -110,6 +104,7 @@ const SupplierCreateLogin = () => {
                 autoComplete="username"
                 autoCorrect="off"
                 placeholder="Choose a username"
+                style={{ caretColor: 'auto' }}
               />
             </div>
             <div>
@@ -122,6 +117,7 @@ const SupplierCreateLogin = () => {
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"
                   placeholder="Choose a password"
+                  style={{ caretColor: 'auto' }}
                 />
                 <button
                   type="button"
@@ -159,6 +155,7 @@ const SupplierCreateLogin = () => {
                 onChange={e => setRepeatPassword(e.target.value)}
                 autoComplete="new-password"
                 placeholder="Repeat your password"
+                style={{ caretColor: 'auto' }}
               />
               <button
                 type="button"

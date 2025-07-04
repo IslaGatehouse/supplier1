@@ -195,7 +195,7 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Company Name *</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -208,7 +208,7 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Email Address *</FormLabel>
                     <FormControl>
-                      <Input type="email" {...field} />
+                      <Input type="email" {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -224,7 +224,7 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Contact Person *</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -243,6 +243,7 @@ const SupplierRegistration = () => {
                         name="company-house-number"
                         placeholder="e.g., 12345678"
                         autoComplete="off"
+                        style={{ caretColor: 'auto' }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -258,7 +259,7 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Company Address *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter company address" />
+                      <Input {...field} placeholder="Enter company address" style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -271,7 +272,7 @@ const SupplierRegistration = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Phone Number</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -370,7 +371,7 @@ const SupplierRegistration = () => {
                         <FormItem>
                           <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your industry" {...field} />
+                            <Input placeholder="Enter your industry" {...field} style={{ caretColor: 'auto' }} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -411,7 +412,7 @@ const SupplierRegistration = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input {...field} placeholder="Please specify other certification(s)" />
+                            <Input {...field} placeholder="Please specify other certification(s)" style={{ caretColor: 'auto' }} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -461,6 +462,7 @@ const SupplierRegistration = () => {
                         value={form.getValues('yearsInBusiness') || ""}
                         autoComplete="off"
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                        style={{ caretColor: 'auto' }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -481,6 +483,7 @@ const SupplierRegistration = () => {
                         type="number" 
                         placeholder="e.g., 30"
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                        style={{ caretColor: 'auto' }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -499,6 +502,7 @@ const SupplierRegistration = () => {
                       {...field} 
                       placeholder="Brief description of your company and services..."
                       rows={4}
+                      style={{ caretColor: 'auto' }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -527,7 +531,7 @@ const SupplierRegistration = () => {
                     });
                   }));
                   setUploadedDocs(prev => [...prev, ...newDocs]);
-                }} />
+                }} style={{ caretColor: 'auto' }} />
                 <Button type="button" variant="outline" onClick={() => document.getElementById('fileUpload')?.click()}>
                   Choose Files
                 </Button>

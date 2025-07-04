@@ -291,9 +291,25 @@ const SupplierProfile = () => {
     setOffset({ x: imgOffsetStart.x + dx, y: imgOffsetStart.y + dy });
   };
 
+  // Extract preview image style for both main and mini preview
+  const previewImgStyle = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: `calc(50% + ${offset.x}px) calc(50% + ${offset.y}px)`,
+    transform: `scale(${zoom})`,
+    borderRadius: '50%',
+  };
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Logout button at the top left */}
+        <div className="flex justify-start mb-4">
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" /> Logout
+          </Button>
+        </div>
         <div className="mb-8">
           <div className="flex items-center mb-4">
             {((editMode ? editData?.profilePicture : supplier?.profilePicture)) ? (
@@ -305,7 +321,7 @@ const SupplierProfile = () => {
             ) : (
               <UserCircle className="h-8 w-8 text-blue-600 mr-3" />
             )}
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Supplier Profile</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome {supplier.username}</h1>
           </div>
           <div className="mb-4">
             <input
@@ -356,9 +372,6 @@ const SupplierProfile = () => {
                   </Button>
                 </>
               )}
-              <Button variant="outline" className="flex-1" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" /> Logout
-              </Button>
               <Button variant="outline" className="flex-1" onClick={() => alert('Contact support at support@example.com')}> 
                 <HelpCircle className="w-4 h-4 mr-2" /> Contact Support
               </Button>
@@ -533,15 +546,7 @@ const SupplierProfile = () => {
                   <img
                     src={previewImg}
                     alt="Preview"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: `calc(50% + ${offset.x}px) calc(50% + ${offset.y}px)`,
-                      transform: `scale(${zoom})`,
-                      borderRadius: '50%',
-                      pointerEvents: 'none',
-                    }}
+                    style={previewImgStyle as React.CSSProperties}
                   />
                   {/* Grid overlay */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{borderRadius: '50%'}}>
@@ -558,14 +563,7 @@ const SupplierProfile = () => {
                     <img
                       src={previewImg}
                       alt="Mini Preview"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        objectPosition: `calc(50% + ${offset.x}px) calc(50% + ${offset.y}px)`,
-                        transform: `scale(${zoom})`,
-                        borderRadius: '50%',
-                      }}
+                      style={previewImgStyle as React.CSSProperties}
                     />
                   </div>
                   <span className="text-xs text-gray-500">Avatar Preview</span>

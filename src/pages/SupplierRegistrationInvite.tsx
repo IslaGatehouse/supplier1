@@ -74,7 +74,22 @@ const SupplierRegistrationInvite = () => {
   });
 
   const handleNext = async () => {
-    const isValid = await form.trigger();
+    let fieldsToValidate = [];
+    if (currentStep === 1) {
+      fieldsToValidate = [
+        "companyName",
+        "email",
+        "contactPerson",
+        "phone",
+        "address",
+        "country",
+        "industry",
+        "otherIndustry"
+      ];
+    } else if (currentStep === 2) {
+      fieldsToValidate = ["companySize", "yearsInBusiness", "turnoverTime"];
+    }
+    const isValid = await form.trigger(fieldsToValidate);
     if (isValid && currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
     }
@@ -157,7 +172,7 @@ const SupplierRegistrationInvite = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Company Name *</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +185,7 @@ const SupplierRegistrationInvite = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Email Address *</FormLabel>
                     <FormControl>
-                      <Input type="email" {...field} />
+                      <Input type="email" {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,7 +200,7 @@ const SupplierRegistrationInvite = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Contact Person *</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -198,7 +213,7 @@ const SupplierRegistrationInvite = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Company House Number</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="e.g., 12345678" />
+                      <Input {...field} placeholder="e.g., 12345678" style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -213,7 +228,7 @@ const SupplierRegistrationInvite = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Company Address *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter company address" />
+                      <Input {...field} placeholder="Enter company address" style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -226,7 +241,7 @@ const SupplierRegistrationInvite = () => {
                   <FormItem>
                     <FormLabel className="dark:text-white">Phone Number</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} style={{ caretColor: 'auto' }} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -325,7 +340,7 @@ const SupplierRegistrationInvite = () => {
                         <FormItem>
                           <FormLabel className="dark:text-white">Please specify your industry</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your industry" {...field} />
+                            <Input placeholder="Enter your industry" {...field} style={{ caretColor: 'auto' }} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -373,7 +388,7 @@ const SupplierRegistrationInvite = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input {...field} placeholder="Please specify other certification(s)" />
+                            <Input {...field} placeholder="Please specify other certification(s)" style={{ caretColor: 'auto' }} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -420,6 +435,7 @@ const SupplierRegistrationInvite = () => {
                         placeholder="e.g., 5"
                         value={form.getValues('yearsInBusiness') || ''}
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                        style={{ caretColor: 'auto' }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -440,6 +456,7 @@ const SupplierRegistrationInvite = () => {
                         type="number" 
                         placeholder="e.g., 30"
                         onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                        style={{ caretColor: 'auto' }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -458,6 +475,7 @@ const SupplierRegistrationInvite = () => {
                       {...field} 
                       placeholder="Brief description of your company and services..."
                       rows={4}
+                      style={{ caretColor: 'auto' }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -485,7 +503,7 @@ const SupplierRegistrationInvite = () => {
                     });
                   }));
                   setUploadedDocs(prev => [...prev, ...newDocs]);
-                }} />
+                }} style={{ caretColor: 'auto' }} />
                 <Button type="button" variant="outline" onClick={() => document.getElementById('fileUpload')?.click()}>
                   Choose Files
                 </Button>
