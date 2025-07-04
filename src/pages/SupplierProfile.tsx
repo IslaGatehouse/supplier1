@@ -82,6 +82,7 @@ const SupplierProfile = () => {
   const [supplier, setSupplier] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<any>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
@@ -91,8 +92,94 @@ const SupplierProfile = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imgOffsetStart, setImgOffsetStart] = useState({ x: 0, y: 0 });
 
+  // Validation functions
+  const validateField = (key: string, value: any) => {
+    const errors: Record<string, string> = {};
+    
+    switch (key) {
+      case 'companyName':
+        if (!value || value.trim().length < 2) {
+          errors[key] = 'Company name must be at least 2 characters';
+        }
+        break;
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value || !emailRegex.test(value)) {
+          errors[key] = 'Please enter a valid email address';
+        }
+        break;
+      case 'contactPerson':
+        if (!value || value.trim().length < 2) {
+          errors[key] = 'Contact person must be at least 2 characters';
+        }
+        break;
+      case 'phone':
+        if (value && value.trim()) {
+          const cleaned = value.replace(/[^\d]/g, "");
+          if (!/^\+?[\d\s\-()]{7,}$/.test(value) || cleaned.length < 7) {
+            errors[key] = 'Please enter a valid phone number';
+          }
+        }
+        break;
+      case 'address':
+        if (!value || value.trim().length < 5) {
+          errors[key] = 'Please enter a complete address (at least 5 characters)';
+        }
+        break;
+      case 'country':
+        if (!value) {
+          errors[key] = 'Please select a country';
+        }
+        break;
+      case 'industry':
+        if (!value) {
+          errors[key] = 'Please select an industry';
+        }
+        break;
+      case 'otherIndustry':
+        if (editData?.industry === 'other' && (!value || value.trim().length < 2)) {
+          errors[key] = 'Please specify your industry';
+        }
+        break;
+      case 'companySize':
+        if (!value) {
+          errors[key] = 'Please select company size';
+        }
+        break;
+      case 'yearsInBusiness':
+        if (value && !/^\d+$/.test(value)) {
+          errors[key] = 'Only numerical values are allowed';
+        }
+        break;
+      case 'turnoverTime':
+        if (value && !/^\d+$/.test(value)) {
+          errors[key] = 'Only numerical values are allowed';
+        }
+        break;
+    }
+    
+    return errors;
+  };
+
+  const validateAllFields = (data: any) => {
+    let allErrors: Record<string, string> = {};
+    
+    // Validate all relevant fields
+    const fieldsToValidate = [
+      'companyName', 'email', 'contactPerson', 'phone', 'address', 
+      'country', 'industry', 'otherIndustry', 'companySize', 
+      'yearsInBusiness', 'turnoverTime'
+    ];
+    
+    fieldsToValidate.forEach(field => {
+      const fieldErrors = validateField(field, data[field]);
+      allErrors = { ...allErrors, ...fieldErrors };
+    });
+    
+    return allErrors;
+  };
+
   useEffect(() => {
-    // Get supplier info from localStorage (from suppliers array)
     const storedUsername = localStorage.getItem("supplier-username");
     const storedEmail = localStorage.getItem("supplier-email");
     const storedCompanyName = localStorage.getItem("supplier-companyName");
@@ -193,16 +280,36 @@ const SupplierProfile = () => {
   // When entering edit mode, copy supplier data
   const handleEdit = () => {
     setEditData({ ...supplier });
+    setValidationErrors({});
     setEditMode(true);
   };
 
-  // Handle input changes in edit mode
+  // Handle input changes in edit mode with validation
   const handleEditChange = (key: string, value: any) => {
     setEditData((prev: any) => ({ ...prev, [key]: value }));
+    
+    // Validate the field and update errors
+    const fieldErrors = validateField(key, value);
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      if (fieldErrors[key]) {
+        newErrors[key] = fieldErrors[key];
+      } else {
+        delete newErrors[key];
+      }
+      return newErrors;
+    });
   };
 
-  // Save changes to localStorage and state
+  // Save changes to localStorage and state with validation
   const handleSave = () => {
+    const allErrors = validateAllFields(editData);
+    setValidationErrors(allErrors);
+    
+    if (Object.keys(allErrors).length > 0) {
+      return; // Don't save if there are validation errors
+    }
+    
     const suppliers = JSON.parse(localStorage.getItem("suppliers") || "[]");
     const idx = suppliers.findIndex((s: any) => s.id === supplier.id);
     if (idx !== -1) {
@@ -211,12 +318,14 @@ const SupplierProfile = () => {
       setSupplier(suppliers[idx]);
     }
     setEditMode(false);
+    setValidationErrors({});
   };
 
   // Cancel editing
   const handleCancel = () => {
     setEditMode(false);
     setEditData(null);
+    setValidationErrors({});
   };
 
   // Handle profile picture upload
@@ -236,7 +345,6 @@ const SupplierProfile = () => {
 
   const handlePreviewSave = () => {
     if (!previewImg) return;
-    // Render the current view to a canvas
     const canvas = document.createElement('canvas');
     const size = 256;
     canvas.width = size;
@@ -244,7 +352,6 @@ const SupplierProfile = () => {
     const ctx = canvas.getContext('2d');
     const img = new window.Image();
     img.onload = () => {
-      // Center the image, apply zoom and offset
       const scaledW = img.width * zoom;
       const scaledH = img.height * zoom;
       const x = (size - scaledW) / 2 + offset.x;
@@ -290,6 +397,8 @@ const SupplierProfile = () => {
     const dy = e.clientY - dragStart.y;
     setOffset({ x: imgOffsetStart.x + dx, y: imgOffsetStart.y + dy });
   };
+
+  const isFormValid = Object.keys(validationErrors).length === 0;
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -348,7 +457,12 @@ const SupplierProfile = () => {
               )}
               {editMode && (
                 <>
-                  <Button variant="outline" className="flex-1" onClick={handleSave}>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={handleSave}
+                    disabled={!isFormValid}
+                  >
                     Save
                   </Button>
                   <Button variant="outline" className="flex-1" onClick={handleCancel}>
@@ -363,6 +477,16 @@ const SupplierProfile = () => {
                 <HelpCircle className="w-4 h-4 mr-2" /> Contact Support
               </Button>
             </div>
+            {editMode && Object.keys(validationErrors).length > 0 && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <h4 className="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h4>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {Object.entries(validationErrors).map(([field, error]) => (
+                    <li key={field}>• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -382,13 +506,18 @@ const SupplierProfile = () => {
                           <TableCell className="font-medium">Country</TableCell>
                           <TableCell>
                             <Select value={editData.country} onValueChange={val => handleEditChange("country", val)}>
-                              <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+                              <SelectTrigger className={validationErrors.country ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
                               <SelectContent>
                                 {countries.map(c => (
                                   <SelectItem key={c} value={c}>{c}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
+                            {validationErrors.country && (
+                              <p className="text-sm text-red-600 mt-1">{validationErrors.country}</p>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
@@ -399,20 +528,29 @@ const SupplierProfile = () => {
                           <TableCell className="font-medium">Industry</TableCell>
                           <TableCell>
                             <Select value={editData.industry} onValueChange={val => handleEditChange("industry", val)}>
-                              <SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger>
+                              <SelectTrigger className={validationErrors.industry ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Select industry" />
+                              </SelectTrigger>
                               <SelectContent>
                                 {industryOptions.map(opt => (
                                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
+                            {validationErrors.industry && (
+                              <p className="text-sm text-red-600 mt-1">{validationErrors.industry}</p>
+                            )}
                             {editData.industry === "other" && (
                               <div className="mt-2">
                                 <Input
                                   value={editData.otherIndustry || ''}
                                   onChange={e => handleEditChange("otherIndustry", e.target.value)}
                                   placeholder="Please specify your industry"
+                                  className={validationErrors.otherIndustry ? "border-red-500" : ""}
                                 />
+                                {validationErrors.otherIndustry && (
+                                  <p className="text-sm text-red-600 mt-1">{validationErrors.otherIndustry}</p>
+                                )}
                               </div>
                             )}
                           </TableCell>
@@ -463,13 +601,18 @@ const SupplierProfile = () => {
                           <TableCell className="font-medium">Company Size</TableCell>
                           <TableCell>
                             <Select value={editData.companySize} onValueChange={val => handleEditChange("companySize", val)}>
-                              <SelectTrigger><SelectValue placeholder="Select company size" /></SelectTrigger>
+                              <SelectTrigger className={validationErrors.companySize ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Select company size" />
+                              </SelectTrigger>
                               <SelectContent>
                                 {companySizeOptions.map(opt => (
                                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
+                            {validationErrors.companySize && (
+                              <p className="text-sm text-red-600 mt-1">{validationErrors.companySize}</p>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
@@ -489,7 +632,7 @@ const SupplierProfile = () => {
                         </TableRow>
                       );
                     }
-                    // Default: text input
+                    // Default: text input with validation
                     return (
                       <TableRow key={key}>
                         <TableCell className="font-medium">{key}</TableCell>
@@ -497,7 +640,11 @@ const SupplierProfile = () => {
                           <Input
                             value={String(value ?? '')}
                             onChange={e => handleEditChange(key, e.target.value)}
+                            className={validationErrors[key] ? "border-red-500" : ""}
                           />
+                          {validationErrors[key] && (
+                            <p className="text-sm text-red-600 mt-1">{validationErrors[key]}</p>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -595,4 +742,4 @@ const SupplierProfile = () => {
   );
 };
 
-export default SupplierProfile; 
+export default SupplierProfile;
