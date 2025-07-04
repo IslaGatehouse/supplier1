@@ -108,10 +108,11 @@ const SupplierCreateLogin = () => {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 autoComplete="username"
+                autoCorrect="off"
                 placeholder="Choose a username"
               />
             </div>
-            <div className="relative">
+            <div className="relative flex items-center">
               <label htmlFor="password" className="block mb-1 font-medium">Password</label>
               <Input
                 id="password"
